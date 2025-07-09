@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "db.js",
   "scripts": {
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "start": "node server.js",
-  "init-db": "node -e 'require(\"./db.js\").initializeDatabase()'"
-},
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "init-db": "node -e 'require(\"./db.js\").initializeDatabase()'"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

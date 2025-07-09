@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 
+// Konfiguracija pool-a za povezivanje s bazom podataka
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -7,6 +8,13 @@ const pool = new Pool({
   }
 });
 
+// Dodajemo error handling za pool
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
+
+// Funkcija za inicijalizaciju baze podataka
 async function initializeDatabase() {
   try {
     await pool.query(`
@@ -28,9 +36,7 @@ async function initializeDatabase() {
   }
 }
 
-// Pozivamo funkciju odmah da inicijaliziramo bazu
-initializeDatabase();
-
+// Funkcija za provjeru dostupnosti termina
 async function checkAvailability(date, time) {
   try {
     const result = await pool.query('SELECT COUNT(*) as count FROM appointments WHERE datetime = $1', [`${date}T${time}`]);
@@ -41,7 +47,7 @@ async function checkAvailability(date, time) {
   }
 }
 
-// U db.js
+// Funkcija za rezervaciju termina
 async function bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime) {
   const client = await pool.connect();
   try {
@@ -67,10 +73,10 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
   }
 }
 
+// Funkcija za dohvaćanje svih termina
 async function getAllAppointments() {
   try {
     const result = await pool.query('SELECT * FROM appointments ORDER BY datetime');
-    console.log('All appointments:', result.rows);
     return result.rows;
   } catch (error) {
     console.error('Error getting all appointments:', error);
@@ -78,15 +84,7 @@ async function getAllAppointments() {
   }
 }
 
-
-
-module.exports = {
-  initializeDatabase,
-  checkAvailability,
-  bookAppointment,
-  getAllAppointments,
-  getAvailableSlots
-};
+// Funkcija za dohvaćanje dostupnih termina
 async function getAvailableSlots(date, service) {
   try {
     const workingHours = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
@@ -101,3 +99,16 @@ async function getAvailableSlots(date, service) {
     throw error;
   }
 }
+
+// Izvoz funkcija za korištenje u drugim dijelovima aplikacije
+module.exports = {
+  pool,
+  initializeDatabase,
+  checkAvailability,
+  bookAppointment,
+  getAllAppointments,
+  getAvailableSlots
+};
+
+// Inicijalizacija baze podataka pri pokretanju
+initializeDatabase();
