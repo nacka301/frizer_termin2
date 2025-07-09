@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // Endpoint za provjeru dostupnosti
 app.get('/api/check-availability', async (req, res) => {
@@ -22,6 +23,7 @@ app.get('/api/check-availability', async (req, res) => {
     res.status(500).json({ error: 'Interna greška servera.' });
   }
 });
+
 // Endpoint za rezervaciju termina
 app.post('/api/book', async (req, res) => {
   const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
@@ -40,6 +42,8 @@ app.post('/api/book', async (req, res) => {
     res.status(500).json({ error: 'Greška pri rezervaciji termina.' });
   }
 });
+
+// Endpoint za dohvaćanje dostupnih termina
 app.get('/api/available-slots', async (req, res) => {
   const { date, service } = req.query;
   if (!date || !service) {
@@ -53,51 +57,54 @@ app.get('/api/available-slots', async (req, res) => {
     res.status(500).json({ error: 'Interna greška servera.' });
   }
 });
+
 // Endpoint za dohvaćanje svih rezervacija
 app.get('/api/appointments', async (req, res) => {
   try {
     const appointments = await db.getAllAppointments();
-    res.json(appointments);
+    const events = appointments.map(appointment => ({
+      title: `${appointment.ime} ${appointment.prezime} - ${appointment.service}`,
+      start: appointment.datetime
+    }));
+    res.json(events);
   } catch (error) {
-    console.error('Greška pri dohvaćanju rezervacija:', error);
-    res.status(500).json({ error: 'Interna greška servera.' });
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Serve rezervacija.html for /rezervacija route
+// Admin login endpoint
+app.post('/api/admin-login', (req, res) => {
+  const { username, password } = req.body;
+  // Ovdje biste trebali implementirati pravu autentifikaciju
+  // Ovo je samo primjer i nije sigurno za produkciju
+  if (username === 'admin' && password === 'password') {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false });
+  }
+});
+
+// Rute za serviranje HTML stranica
 app.get('/rezervacija', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'rezervacija.html'));
 });
 
-// Pokreni server
-app.listen(PORT, () => {
-  console.log(`Server je pokrenut na portu ${PORT}`);
+app.get('/admin-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin-login.html'));
 });
+
+app.get('/admin-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
+});
+
 // Općeniti error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Nešto je pošlo po zlu!');
 });
-app.post('/api/admin-login', (req, res) => {
-    const { username, password } = req.body;
-    // Ovdje biste trebali implementirati pravu autentifikaciju
-    // Ovo je samo primjer i nije sigurno za produkciju
-    if (username === 'admin' && password === 'password') {
-        res.json({ success: true });
-    } else {
-        res.status(401).json({ success: false });
-    }
-});
-app.get('/api/appointments', async (req, res) => {
-    try {
-        const appointments = await db.getAllAppointments();
-        const events = appointments.map(appointment => ({
-            title: `${appointment.ime} ${appointment.prezime} - ${appointment.service}`,
-            start: appointment.datetime
-        }));
-        res.json(events);
-    } catch (error) {
-        console.error('Error fetching appointments:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+
+// Pokreni server
+app.listen(PORT, () => {
+  console.log(`Server je pokrenut na portu ${PORT}`);
 });
