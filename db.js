@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const moment = require('moment');
 
 // Konfiguracija pool-a za povezivanje s bazom podataka
 const pool = new Pool({
@@ -16,8 +17,10 @@ pool.on('error', (err, client) => {
 
 // Funkcija za inicijalizaciju baze podataka
 async function initializeDatabase() {
+  const client = await pool.connect();
   try {
-    await pool.query(`
+    await client.query('SET datestyle = \'ISO, DMY\'');
+    await client.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,
         ime VARCHAR(50) NOT NULL,
@@ -33,13 +36,16 @@ async function initializeDatabase() {
     console.log('Database initialized');
   } catch (error) {
     console.error('Error initializing database:', error);
+  } finally {
+    client.release();
   }
 }
 
 // Funkcija za provjeru dostupnosti termina
 async function checkAvailability(date, time) {
   try {
-    const result = await pool.query('SELECT COUNT(*) as count FROM appointments WHERE datetime = $1', [`${date}T${time}`]);
+    const formattedDatetime = moment(`${date} ${time}`, "DD.MM.YYYY HH:mm").format("YYYY-MM-DD HH:mm:ss");
+    const result = await pool.query('SELECT COUNT(*) as count FROM appointments WHERE datetime = $1', [formattedDatetime]);
     return parseInt(result.rows[0].count) === 0;
   } catch (error) {
     console.error('Error checking availability:', error);
@@ -52,14 +58,16 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const isAvailable = await checkAvailability(datetime.split('T')[0], datetime.split('T')[1]);
+    const [date, time] = datetime.split('T');
+    const isAvailable = await checkAvailability(date, time);
     if (!isAvailable) {
       await client.query('ROLLBACK');
       return false;
     }
+    const formattedDatetime = moment(datetime, "DD.MM.YYYYTHH:mm").format("YYYY-MM-DD HH:mm:ss");
     const result = await client.query(
       'INSERT INTO appointments (ime, prezime, mobitel, email, service, duration, price, datetime) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [ime, prezime, mobitel, email, service, parseInt(duration), parseFloat(price), datetime]
+      [ime, prezime, mobitel, email, service, parseInt(duration), parseFloat(price), formattedDatetime]
     );
     await client.query('COMMIT');
     console.log('Appointment booked:', result.rows[0]);
@@ -88,9 +96,10 @@ async function getAllAppointments() {
 async function getAvailableSlots(date, service) {
   try {
     const workingHours = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+    const formattedDate = moment(date, "DD.MM.YYYY").format("YYYY-MM-DD");
     const result = await pool.query(
-      'SELECT TIME(datetime) as time FROM appointments WHERE DATE(datetime) = $1 AND service = $2',
-      [date, service]
+      'SELECT TO_CHAR(datetime, \'HH24:MI\') as time FROM appointments WHERE DATE(datetime) = $1 AND service = $2',
+      [formattedDate, service]
     );
     const reservedSlots = result.rows.map(row => row.time);
     return workingHours.filter(slot => !reservedSlots.includes(slot));
