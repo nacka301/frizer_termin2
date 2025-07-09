@@ -12,66 +12,56 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Endpoint za provjeru dostupnosti
-app.get('/api/check-availability', (req, res) => {
+app.get('/api/check-availability', async (req, res) => {
   const { date, time } = req.query;
-  const isAvailable = db.checkAvailability(date, time);
-  res.json({ available: isAvailable });
-});
-app.get('/api/appointments', (req, res) => {
   try {
-    const appointments = db.getAllAppointments();
-    res.json(appointments);
+    const isAvailable = await db.checkAvailability(date, time);
+    res.json({ available: isAvailable });
   } catch (error) {
-    console.error('Error fetching appointments:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error checking availability:', error);
+    res.status(500).json({ error: 'Interna greška servera.' });
   }
 });
-// Rezervacija termina
-app.post('/api/rezervacija', async (req, res) => {
-  const { ime, datum, usluga } = req.body;
-  try {
-    await db.rezervirajTermin(ime, datum, usluga);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 // Endpoint za rezervaciju termina
-app.post('/api/book', (req, res) => {
+app.post('/api/book', async (req, res) => {
   const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
+  if (!ime || !prezime || !mobitel || !email || !service || !duration || !price || !datetime) {
+    return res.status(400).json({ error: 'Svi podaci su obavezni.' });
+  }
   try {
-    const booked = db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
+    const booked = await db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
     if (booked) {
-      res.json({ success: true, message: 'Termin uspješno rezerviran!' });
+      res.json({ success: true, message: 'Termin uspješno rezerviran!', appointment: { ime, prezime, service, datetime } });
     } else {
-      res.status(400).json({ error: 'Nije moguće rezervirati termin.' });
+      res.status(409).json({ error: 'Termin više nije dostupan.' });
     }
   } catch (error) {
+    console.error('Error booking appointment:', error);
     res.status(500).json({ error: 'Greška pri rezervaciji termina.' });
   }
 });
-
-// Endpoint za dohvaćanje svih rezervacija
-app.get('/api/appointments', (req, res) => {
+app.get('/api/available-slots', async (req, res) => {
+  const { date, service } = req.query;
+  if (!date || !service) {
+    return res.status(400).json({ error: 'Datum i usluga su obavezni parametri.' });
+  }
   try {
-    const appointments = db.getAllAppointments();
+    const availableSlots = await db.getAvailableSlots(date, service);
+    res.json(availableSlots);
+  } catch (error) {
+    console.error('Error fetching available slots:', error);
+    res.status(500).json({ error: 'Interna greška servera.' });
+  }
+});
+// Endpoint za dohvaćanje svih rezervacija
+app.get('/api/appointments', async (req, res) => {
+  try {
+    const appointments = await db.getAllAppointments();
     res.json(appointments);
   } catch (error) {
     console.error('Greška pri dohvaćanju rezervacija:', error);
     res.status(500).json({ error: 'Interna greška servera.' });
   }
-});
-
-// Nova ruta za vraćanje svih rezervacija
-app.get('/api/rezervacije', (req, res) => {
-  db.dohvatiSveRezervacije()
-    .then((rezervacije) => {
-      res.json(rezervacije);
-    })
-    .catch((err) => {
-      res.status(500).json({ error: err.message });
-    });
 });
 
 // Serve rezervacija.html for /rezervacija route

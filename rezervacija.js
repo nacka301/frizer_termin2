@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('reservation-form');
-  const dateInput = document.getElementById('date');
-  const timeInput = document.getElementById('time');
+  const calendar = document.getElementById('calendar');
+  const timeSlots = document.getElementById('time-slots');
   const feedback = document.getElementById('feedback');
-  const availabilityStatus = document.getElementById('availability-status');
   const selectedServiceElement = document.getElementById('selected-service');
 
   // Dohvati parametre iz URL-a
@@ -15,52 +14,48 @@ document.addEventListener('DOMContentLoaded', () => {
   // Prikaži odabranu uslugu
   selectedServiceElement.textContent = `Odabrana usluga: ${service} (${duration}, ${price})`;
 
-  // Inicijalizacija Flatpickr za datum i vrijeme
-  flatpickr(dateInput, {
+  let selectedDate = null;
+  let selectedTime = null;
+
+  // Inicijalizacija Flatpickr za kalendar
+  const fp = flatpickr(calendar, {
+    inline: true,
     minDate: "today",
     maxDate: new Date().fp_incr(30), // Dozvoli rezervacije do 30 dana unaprijed
-    dateFormat: "d.m.Y", // Format datuma
-    altInput: true,
-    altFormat: "d.m.Y",
-    placeholder: "Datum"
-  });
-
-  flatpickr(timeInput, {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "H:i",
-    minTime: "09:00",
-    maxTime: "18:00",
-    altInput: true,
-    altFormat: "H:i",
-    placeholder: "Vrijeme"
-  });
-
-  // Provjeri dostupnost kada se odabere datum i vrijeme
-  [dateInput, timeInput].forEach(input => {
-    input.addEventListener('change', checkAvailability);
-  });
-
-  async function checkAvailability() {
-    const date = dateInput.value;
-    const time = timeInput.value;
-    if (date && time) {
-      try {
-        const response = await fetch(`http://localhost:3000/api/check-availability?date=${date}&time=${time}`);
-        const data = await response.json();
-        if (data.available) {
-          availabilityStatus.innerText = 'Termin je dostupan!';
-          availabilityStatus.style.color = 'green';
-        } else {
-          availabilityStatus.innerText = 'Termin nije dostupan. Molimo odaberite drugi.';
-          availabilityStatus.style.color = 'red';
-        }
-      } catch (err) {
-        console.error(err);
-        availabilityStatus.innerText = 'Greška pri provjeri dostupnosti.';
-        availabilityStatus.style.color = 'red';
-      }
+    dateFormat: "Y-m-d",
+    onChange: function(selectedDates, dateStr, instance) {
+      selectedDate = dateStr;
+      fetchAvailableTimeSlots(dateStr);
     }
+  });
+
+  async function fetchAvailableTimeSlots(date) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/available-slots?date=${date}&service=${service}`);
+      const slots = await response.json();
+      displayTimeSlots(slots);
+    } catch (err) {
+      console.error(err);
+      timeSlots.innerHTML = '<p>Greška pri dohvaćanju termina.</p>';
+    }
+  }
+
+  function displayTimeSlots(slots) {
+    timeSlots.innerHTML = '';
+    slots.forEach(slot => {
+      const button = document.createElement('button');
+      button.textContent = slot;
+      button.classList.add('time-slot');
+      button.addEventListener('click', () => selectTimeSlot(slot));
+      timeSlots.appendChild(button);
+    });
+  }
+
+  function selectTimeSlot(slot) {
+    const buttons = timeSlots.querySelectorAll('.time-slot');
+    buttons.forEach(btn => btn.classList.remove('selected'));
+    event.target.classList.add('selected');
+    selectedTime = slot;
   }
 
   function isValidEmail(email) {
@@ -76,15 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Potvrdi i pošalji termin
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const date = dateInput.value;
-    const time = timeInput.value;
     const ime = document.getElementById('ime').value;
     const prezime = document.getElementById('prezime').value;
     const mobitel = document.getElementById('mobitel').value;
     const email = document.getElementById('email').value;
 
-    if (!date || !time || !ime || !prezime || !mobitel || !email) {
-      feedback.innerText = 'Molimo popunite sva polja.';
+    if (!selectedDate || !selectedTime || !ime || !prezime || !mobitel || !email) {
+      feedback.innerText = 'Molimo popunite sva polja i odaberite datum i vrijeme.';
       return;
     }
 
@@ -112,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
           service,
           duration,
           price,
-          datetime: `${date}T${time}`
+          datetime: `${selectedDate}T${selectedTime}`
         })
       });
 
@@ -122,6 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
         feedback.innerText = 'Termin uspješno rezerviran!';
         feedback.style.color = 'green';
         form.reset();
+        selectedDate = null;
+        selectedTime = null;
+        fp.clear();
+        timeSlots.innerHTML = '';
       } else {
         feedback.innerText = data.error || 'Greška pri rezervaciji.';
         feedback.style.color = 'red';
