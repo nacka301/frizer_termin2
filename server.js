@@ -78,3 +78,26 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Nešto je pošlo po zlu!');
 });
+app.post('/api/admin-login', (req, res) => {
+    const { username, password } = req.body;
+    // Ovdje biste trebali implementirati pravu autentifikaciju
+    // Ovo je samo primjer i nije sigurno za produkciju
+    if (username === 'admin' && password === 'password') {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false });
+    }
+});
+app.get('/api/appointments', async (req, res) => {
+    try {
+        const appointments = await db.getAllAppointments();
+        const events = appointments.map(appointment => ({
+            title: `${appointment.ime} ${appointment.prezime} - ${appointment.service}`,
+            start: appointment.datetime
+        }));
+        res.json(events);
+    } catch (error) {
+        console.error('Error fetching appointments:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});

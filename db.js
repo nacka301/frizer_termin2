@@ -83,13 +83,16 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
 
 // Funkcija za dohvaćanje svih termina
 async function getAllAppointments() {
-  try {
-    const result = await pool.query('SELECT * FROM appointments ORDER BY datetime');
-    return result.rows;
-  } catch (error) {
-    console.error('Error getting all appointments:', error);
-    return [];
-  }
+    try {
+        const result = await pool.query('SELECT *, TO_CHAR(datetime, \'YYYY-MM-DD"T"HH24:MI:SS\') as formatted_datetime FROM appointments ORDER BY datetime');
+        return result.rows.map(row => ({
+            ...row,
+            datetime: row.formatted_datetime
+        }));
+    } catch (error) {
+        console.error('Error getting all appointments:', error);
+        return [];
+    }
 }
 
 // Funkcija za dohvaćanje dostupnih termina

@@ -399,3 +399,14 @@ footer {
     padding: 10px;
   }
 }
+.admin-link {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.8em;
+  color: #666;
+  text-decoration: none;
+}
+
+.admin-link:hover {
+  text-decoration: underline;
+}
