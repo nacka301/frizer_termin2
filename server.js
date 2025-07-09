@@ -5,7 +5,7 @@ const db = require('./db');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -71,7 +71,7 @@ app.get('/rezervacija', (req, res) => {
 
 // Pokreni server
 app.listen(PORT, () => {
-console.log(`Server je pokrenut na http://localhost:${PORT}`);
+  console.log(`Server je pokrenut na portu ${PORT}`);
 });
 // Općeniti error handler
 app.use((err, req, res, next) => {
