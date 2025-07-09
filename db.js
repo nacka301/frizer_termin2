@@ -1,66 +1,83 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const db = new Database(path.join(__dirname, 'appointments.db'));
+const { Pool } = require('pg');
 
-function initializeDatabase() {
-  db.exec(`
-    DROP TABLE IF EXISTS appointments;
-    CREATE TABLE appointments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      ime TEXT,
-      prezime TEXT,
-      mobitel TEXT,
-      email TEXT,
-      service TEXT,
-      duration TEXT,
-      price TEXT,
-      datetime TEXT
-    )
-  `);
-  console.log('Database initialized');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+async function initializeDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS appointments (
+        id SERIAL PRIMARY KEY,
+        ime VARCHAR(50) NOT NULL,
+        prezime VARCHAR(50) NOT NULL,
+        mobitel VARCHAR(15) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        service VARCHAR(100) NOT NULL,
+        duration SMALLINT NOT NULL,
+        price NUMERIC(6,2) NOT NULL,
+        datetime TIMESTAMP NOT NULL
+      )
+    `);
+    console.log('Database initialized');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
 }
 
 // Pozivamo funkciju odmah da inicijaliziramo bazu
 initializeDatabase();
 
-function checkAvailability(date, time) {
+async function checkAvailability(date, time) {
   console.log('Checking availability for:', date, time);
-  const stmt = db.prepare('SELECT COUNT(*) as count FROM appointments WHERE datetime = ?');
-  const result = stmt.get(`${date}T${time}`);
-  console.log('Result:', result);
-  return result.count === 0;
+  try {
+    const result = await pool.query('SELECT COUNT(*) as count FROM appointments WHERE datetime = $1', [`${date} ${time}`]);
+    console.log('Result:', result.rows[0]);
+    return parseInt(result.rows[0].count) === 0;
+  } catch (error) {
+    console.error('Error checking availability:', error);
+    return false;
+  }
 }
 
 // U db.js
-function bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime) {
+async function bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime) {
   console.log('Booking appointment with:', { ime, prezime, mobitel, email, service, duration, price, datetime });
   try {
-    const stmt = db.prepare('INSERT INTO appointments (ime, prezime, mobitel, email, service, duration, price, datetime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-    const info = stmt.run(ime, prezime, mobitel, email, service, duration, price, datetime);
-    console.log('Insertion result:', info);
-    if (info.changes > 0) {
-      console.log('Appointment successfully booked');
-      return true;
-    } else {
-      console.log('No changes made to the database');
-      return false;
-    }
+    const result = await pool.query(
+      'INSERT INTO appointments (ime, prezime, mobitel, email, service, duration, price, datetime) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [ime, prezime, mobitel, email, service, parseInt(duration), parseFloat(price), datetime]
+    );
+    console.log('Insertion result:', result.rows[0]);
+    return result.rows.length > 0;
   } catch (error) {
     console.error('Error booking appointment:', error);
     return false;
   }
 }
 
-function getAllAppointments() {
-  const stmt = db.prepare('SELECT * FROM appointments');
-  const results = stmt.all();
-  console.log('All appointments:', results);
-  return results;
+async function getAllAppointments() {
+  try {
+    const result = await pool.query('SELECT * FROM appointments ORDER BY datetime');
+    console.log('All appointments:', result.rows);
+    return result.rows;
+  } catch (error) {
+    console.error('Error getting all appointments:', error);
+    return [];
+  }
 }
 
-function dohvatiSveRezervacije() {
-  const stmt = db.prepare('SELECT * FROM appointments');
-  return stmt.all();
+async function dohvatiSveRezervacije() {
+  try {
+    const result = await pool.query('SELECT * FROM appointments ORDER BY datetime');
+    return result.rows;
+  } catch (error) {
+    console.error('Error dohvatiSveRezervacije:', error);
+    return [];
+  }
 }
 
 module.exports = {
