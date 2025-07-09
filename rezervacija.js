@@ -31,12 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetchAvailableTimeSlots(date) {
     try {
-      const response = await fetch(`http://localhost:3000/api/available-slots?date=${date}&service=${service}`);
+      const response = await fetch(`/api/available-slots?date=${date}&service=${service}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const slots = await response.json();
       displayTimeSlots(slots);
     } catch (err) {
-      console.error(err);
-      timeSlots.innerHTML = '<p>Greška pri dohvaćanju termina.</p>';
+      console.error('Error fetching available slots:', err);
+      timeSlots.innerHTML = '<p>Greška pri dohvaćanju termina: ' + err.message + '</p>';
     }
   }
 
@@ -92,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/book', {
+      const response = await fetch('/api/book', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -109,23 +112,22 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      if (response.ok) {
-        feedback.innerText = 'Termin uspješno rezerviran!';
-        feedback.style.color = 'green';
-        form.reset();
-        selectedDate = null;
-        selectedTime = null;
-        fp.clear();
-        timeSlots.innerHTML = '';
-      } else {
-        feedback.innerText = data.error || 'Greška pri rezervaciji.';
-        feedback.style.color = 'red';
-      }
+      feedback.innerText = 'Termin uspješno rezerviran!';
+      feedback.style.color = 'green';
+      form.reset();
+      selectedDate = null;
+      selectedTime = null;
+      fp.clear();
+      timeSlots.innerHTML = '';
     } catch (err) {
-      console.error(err);
-      feedback.innerText = 'Greška pri povezivanju sa serverom.';
+      console.error('Error booking appointment:', err);
+      feedback.innerText = 'Greška pri rezervaciji: ' + err.message;
       feedback.style.color = 'red';
     }
   });
