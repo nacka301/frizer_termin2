@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enchanted Grove Login</title>
+    <title>Admin Login</title>
     <style>
         * {
             margin: 0;
@@ -17,153 +17,18 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #e8e2d1;
-            overflow: hidden;
+            background: #ffffff;
         }
 
-        /* Meadow Background */
-        .meadow-bg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(30, 60, 140, 0.3), rgba(200, 50, 50, 0.3));
-            animation: breezeFlow 15s infinite ease-in-out;
-            z-index: 0;
-        }
-
-        .meadow-bg::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 80%, rgba(30, 60, 140, 0.4), transparent 50%);
-            animation: leafDrift 12s infinite linear;
-        }
-
-        .meadow-bg::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 80% 30%, rgba(200, 50, 50, 0.4), transparent 50%);
-            animation: leafDrift 14s infinite linear reverse;
-        }
-
-        @keyframes breezeFlow {
-            0%, 100% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
-
-        @keyframes leafDrift {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            100% { transform: translate(-20px, 20px) rotate(360deg); }
-        }
-
-        /* Spore Orbs */
-        .spore-orbs {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1;
-            perspective: 1200px;
-        }
-
-        .spore-orb {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 2px solid rgba(30, 60, 140, 0.6);
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(200, 50, 50, 0.15), transparent);
-            animation: sporeFloat 9s infinite ease-in-out;
-        }
-
-        .spore-orb:nth-child(2) {
-            animation-delay: -3s;
-            transform: scale(0.9);
-            border-color: rgba(147, 112, 219, 0.6);
-        }
-
-        .spore-orb:nth-child(3) {
-            animation-delay: -6s;
-            transform: scale(0.8);
-            border-color: rgba(200, 50, 50, 0.6);
-        }
-
-        @keyframes sporeFloat {
-            0% { transform: rotate3d(0, 1, 1, 0deg); opacity: 0.5; }
-            50% { transform: rotate3d(0, 1, 1, 120deg); opacity: 1; }
-            100% { transform: rotate3d(0, 1, 1, 240deg); opacity: 0.5; }
-        }
-
-        /* Glowing Petals */
-        .petal-glows {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-        }
-
-        .petal {
-            position: absolute;
-            width: 10px;
-            height: 20px;
-            background: linear-gradient(45deg, #c83232, #1e3c8c);
-            border-radius: 50% 50% 0 0;
-            box-shadow: 0 0 25px #c83232;
-            animation: petalDance 7s infinite ease-in-out;
-        }
-
-        @keyframes petalDance {
-            0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.3; }
-            50% { transform: translate(-25px, 25px) rotate(180deg) scale(1.5); opacity: 1; }
-            100% { transform: translate(0, 0) rotate(360deg) scale(1); opacity: 0.3; }
-        }
-
-        /* Grove Core */
         .grove-core {
             position: relative;
             width: 320px;
             padding: 30px 25px;
-            background: linear-gradient(145deg, rgba(232, 226, 209, 0.9), rgba(147, 112, 219, 0.2));
-            border-radius: 30px 30px 20px 20px;
-            border: 3px solid rgba(30, 60, 140, 0.8);
-            box-shadow: 0 0 60px rgba(30, 60, 140, 0.6),
-                       inset 0 0 30px rgba(200, 50, 50, 0.3);
-            z-index: 3;
-            animation: groveEmerge 3s ease-out forwards;
-            backdrop-filter: blur(12px);
+            background: #f0f0f0;
+            border-radius: 30px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
 
-        @keyframes groveEmerge {
-            0% { transform: scale(0.1) rotate(180deg); opacity: 0; }
-            60% { transform: scale(1.1) rotate(-10deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        /* Vine Aura Effect */
-        .grove-core::before {
-            content: '';
-            position: absolute;
-            top: -15px;
-            left: -15px;
-            width: calc(100% + 30px);
-            height: calc(100% + 30px);
-            background: conic-gradient(from 150deg, rgba(30, 60, 140, 0.5), transparent 70%);
-            animation: vineTwirl 4s infinite linear;
-            z-index: -1;
-            border-radius: 30px 30px 20px 20px;
-        }
-
-        @keyframes vineTwirl {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(-360deg); }
-        }
-
-        /* Title with Spore Glow */
         h2 {
             color: #1e3c8c;
             text-align: center;
@@ -171,16 +36,8 @@
             margin-bottom: 30px;
             text-transform: uppercase;
             letter-spacing: 5px;
-            text-shadow: 0 0 20px #c83232;
-            animation: sporeGlow 3.5s infinite ease-in-out;
         }
 
-        @keyframes sporeGlow {
-            0%, 100% { text-shadow: 0 0 20px #c83232; }
-            50% { text-shadow: 0 0 30px #c83232, 0 0 50px #1e3c8c; }
-        }
-
-        /* Input Vines */
         .input-vine {
             position: relative;
             margin-bottom: 25px;
@@ -200,30 +57,7 @@
 
         .input-vine input:focus {
             border-color: #c83232;
-            box-shadow: 0 0 30px rgba(200, 50, 50, 0.8);
-            transform: scale(1.04) rotate(2deg);
-        }
-
-        .input-vine::after {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: 0;
-            width: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #1e3c8c, #c83232);
-            transition: width 0.5s ease;
-        }
-
-        .input-vine input:focus ~ ::after {
-            width: 100%;
-            animation: vineCurl 2.5s infinite ease-in-out;
-        }
-
-        @keyframes vineCurl {
-            0% { transform: translateX(-50%) skew(0deg); }
-            50% { transform: translateX(50%) skew(10deg); }
-            100% { transform: translateX(-50%) skew(0deg); }
+            box-shadow: 0 0 10px rgba(200, 50, 50, 0.3);
         }
 
         .input-vine label {
@@ -232,241 +66,56 @@
             left: 20px;
             color: #1e3c8c;
             font-size: 14px;
-            background: linear-gradient(145deg, rgba(232, 226, 209, 0.9), rgba(147, 112, 219, 0.2));
+            background: #f0f0f0;
             padding: 5px 10px;
             border-radius: 10px;
-            border: 1px solid rgba(30, 60, 140, 0.5);
             transition: all 0.5s ease;
         }
 
         .input-vine input:focus + label {
             color: #c83232;
-            transform: scale(1.06) translateY(-5px);
-            box-shadow: 0 0 20px #c83232;
         }
 
-        /* Button Grove */
-        .button-grove {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        /* Blossom Button */
         .blossom-btn {
-            flex: 2;
+            width: 100%;
             padding: 14px;
             background: linear-gradient(45deg, #1e3c8c, #c83232);
             border: none;
             border-radius: 40px;
-            color: #e8e2d1;
+            color: #ffffff;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            position: relative;
             transition: all 0.6s ease;
         }
 
         .blossom-btn:hover {
-            transform: scale(1.07) translateY(-10px);
-            box-shadow: 0 0 40px rgba(30, 60, 140, 0.9);
-        }
-
-        .blossom-btn::after {
-            content: '';
-            position: absolute;
-            top: -60%;
-            left: -60%;
-            width: 220%;
-            height: 220%;
-            background: radial-gradient(circle, rgba(200, 50, 50, 0.5), transparent 80%);
-            opacity: 0;
-            transition: opacity 0.6s ease;
-        }
-
-        .blossom-btn:hover::after {
-            opacity: 1;
-            animation: petalSwirl 3s infinite linear;
-        }
-
-        @keyframes petalSwirl {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Leaf Buttons (Resend and Cancel) */
-        .leaf-btn {
-            flex: 1;
-            padding: 12px;
-            background: linear-gradient(45deg, rgba(30, 60, 140, 0.3), rgba(200, 50, 50, 0.3));
-            border: 2px solid rgba(30, 60, 140, 0.6);
-            border-radius: 40px;
-            color: #1e3c8c;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.5s ease;
-        }
-
-        .leaf-btn:hover {
-            transform: scale(1.06) translateY(-8px);
-            background: linear-gradient(45deg, rgba(30, 60, 140, 0.6), rgba(200, 50, 50, 0.6));
-            box-shadow: 0 0 30px rgba(200, 50, 50, 0.7);
-        }
-
-        /* Sprout Link */
-        .sprout-link {
-            text-align: center;
-            margin-top: 25px;
-            color: #1e3c8c;
-            font-size: 14px;
-        }
-
-        .sprout-link a {
-            color: #9370db;
-            text-decoration: none;
-            position: relative;
-            transition: all 0.5s ease;
-        }
-
-        .sprout-link a:hover {
-            letter-spacing: 4px;
-            text-shadow: 0 0 20px #9370db;
-        }
-
-        .sprout-link a::before {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #9370db;
-            transition: width 0.5s ease;
-        }
-
-        .sprout-link a:hover::before {
-            width: 100%;
-            animation: sproutGrow 1.4s infinite ease-in-out;
-        }
-
-        @keyframes sproutGrow {
-            0% { transform: scaleX(1); }
-            50% { transform: scaleX(1.2); }
-            100% { transform: scaleX(1); }
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 <body>
-    <div class="meadow-bg"></div>
-    <div class="spore-orbs">
-        <div class="spore-orb"></div>
-        <div class="spore-orb"></div>
-        <div class="spore-orb"></div>
-    </div>
-    <div class="petal-glows">
-        <div class="petal" style="top: 15%; left: 10%;"></div>
-        <div class="petal" style="top: 50%; left: 80%;"></div>
-        <div class="petal" style="top: 75%; left: 45%;"></div>
-        <div class="petal" style="top: 20%; left: 65%;"></div>
-    </div>
     <div class="grove-core">
-        <h2>Enchanted Grove</h2>
+        <h2>Admin Login</h2>
         <form id="groveForm">
             <div class="input-vine">
-                <input type="email" required>
-                <label>Grove Email</label>
+                <input type="email" id="email" required>
+                <label for="email">Email</label>
             </div>
             <div class="input-vine">
-                <input type="password" required>
-                <label>Secret Sap</label>
+                <input type="password" id="password" required>
+                <label for="password">Password</label>
             </div>
-            <div class="input-vine">
-                <input type="text" maxlength="6" pattern="\d{6}" required>
-                <label>Spore Code</label>
-            </div>
-            <button type="submit" class="blossom-btn">Blossom In</button>
-            <div class="button-grove">
-                <button type="button" class="leaf-btn resend-btn">Resend Code</button>
-                <button type="button" class="leaf-btn cancel-btn">Wither</button>
-            </div>
-            <div class="sprout-link">
-                New Sprout? <a href="#">Take Root</a>
-            </div>
+            <button type="submit" class="blossom-btn">Login</button>
         </form>
     </div>
 
     <script>
-        // Load Lora Font
-        const link = document.createElement('link');
-        link.href = 'https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap';
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-
-        // Form Submission Animation
         document.getElementById('groveForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = this.querySelector('.blossom-btn');
-            const core = document.querySelector('.grove-core');
-            btn.style.transform = 'scale(0.92)';
-            setTimeout(() => {
-                btn.style.transform = 'scale(1.07) translateY(-10px)';
-                core.style.animation = 'groveWither 1.8s ease-in forwards';
-                setTimeout(() => alert('Grove Entered! (Demo)'), 1800);
-            }, 200);
-        });
-
-        // Resend Code Button
-        document.querySelector('.resend-btn').addEventListener('click', function() {
-            this.style.transform = 'scale(0.94)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1.06) translateY(-8px)';
-                alert('Spore Code Resent! (Demo)');
-                setTimeout(() => this.style.transform = 'scale(1)', 300);
-            }, 200);
-        });
-
-        // Cancel Button
-        document.querySelector('.cancel-btn').addEventListener('click', function() {
-            const core = document.querySelector('.grove-core');
-            this.style.transform = 'scale(0.94)';
-            setTimeout(() => {
-                core.style.animation = 'groveWither 1.8s ease-in forwards';
-                setTimeout(() => {
-                    alert('Journey Wilted! (Demo)');
-                    core.style.animation = 'groveEmerge 3s ease-out forwards';
-                }, 1800);
-            }, 200);
-        });
-
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes groveWither {
-                0% { transform: scale(1) rotate(0deg); opacity: 1; }
-                50% { transform: scale(1.15) rotate(12deg); opacity: 0.7; }
-                100% { transform: scale(0.2) rotate(25deg); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Petal Randomization
-        const petals = document.querySelectorAll('.petal');
-        petals.forEach(p => {
-            const top = Math.random() * 90;
-            const left = Math.random() * 90;
-            p.style.top = `${top}%`;
-            p.style.left = `${left}%`;
-            p.style.animationDelay = `${Math.random() * 6}s`;
-        });
-
-        // Mouse Breeze Effect
-        document.addEventListener('mousemove', (e) => {
-            const core = document.querySelector('.grove-core');
-            const orbs = document.querySelector('.spore-orbs');
-            const x = (e.clientX / window.innerWidth - 0.5) * 40;
-            const y = (e.clientY / window.innerHeight - 0.5) * 40;
-            core.style.transform = `translate(${x}px, ${y}px)`;
-            orbs.style.transform = `translate(-50%, -50%) rotateX(${y / 1.8}deg) rotateY(${x / 1.8}deg)`;
+            // Ovdje dodajte logiku za prijavu
+            alert('Login attempt (Demo)');
         });
     </script>
 </body>
