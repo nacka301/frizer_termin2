@@ -20,6 +20,8 @@ async function initializeDatabase() {
   const client = await pool.connect();
   try {
     await client.query('SET datestyle = \'ISO, DMY\'');
+    
+    // Create appointments table
     await client.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,
@@ -33,7 +35,24 @@ async function initializeDatabase() {
         datetime TIMESTAMP NOT NULL
       )
     `);
-    console.log('Database initialized');
+    
+    // Create session table for express-session
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS session (
+        sid VARCHAR NOT NULL COLLATE "default",
+        sess JSON NOT NULL,
+        expire TIMESTAMP(6) NOT NULL
+      )
+      WITH (OIDS=FALSE)
+    `);
+    
+    await client.query(`
+      ALTER TABLE session 
+      ADD CONSTRAINT session_pkey 
+      PRIMARY KEY (sid) NOT DEFERRABLE INITIALLY IMMEDIATE
+    `);
+    
+    console.log('Database initialized with appointments and session tables');
   } catch (error) {
     console.error('Error initializing database:', error);
   } finally {
