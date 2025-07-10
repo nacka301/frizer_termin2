@@ -37,12 +37,12 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             appointmentsDiv.innerHTML = '<p>Učitavanje...</p>';
             
-            const response = await fetch(`/api/appointments-by-date?date=${date}`, {
+            const response = await fetch(`/api/admin/appointments?date=${date}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'same-origin'
+                credentials: 'include'
             });
 
             if (response.ok) {
@@ -93,12 +93,12 @@ document.addEventListener('DOMContentLoaded', function() {
     window.deleteAppointment = async function(appointmentId) {
         if (confirm('Jeste li sigurni da želite obrisati ovu rezervaciju?')) {
             try {
-                const response = await fetch(`/api/appointments/${appointmentId}`, {
+                const response = await fetch(`/api/admin/appointments/${appointmentId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'same-origin'
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -130,7 +130,7 @@ function logout() {
     if (confirm('Jeste li sigurni da se želite odjaviti?')) {
         fetch('/api/admin-logout', {
             method: 'POST',
-            credentials: 'same-origin'
+            credentials: 'include'
         }).then(() => {
             window.location.href = '/admin-login';
         }).catch(error => {
