@@ -1,5 +1,6 @@
 // Modal funkcije
 function showSuccessModal(appointment) {
+  console.log('Showing success modal for:', appointment);
   const modal = document.getElementById('successModal');
   const modalDetails = document.getElementById('modalDetails');
   
@@ -19,6 +20,7 @@ function showSuccessModal(appointment) {
 }
 
 function closeModal() {
+  console.log('Closing modal');
   const modal = document.getElementById('successModal');
   modal.style.display = 'none';
   // Preusmjeri na početnu stranicu
