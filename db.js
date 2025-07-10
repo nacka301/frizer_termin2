@@ -39,17 +39,11 @@ async function initializeDatabase() {
     // Create session table for express-session
     await client.query(`
       CREATE TABLE IF NOT EXISTS session (
-        sid VARCHAR NOT NULL COLLATE "default",
+        sid VARCHAR NOT NULL COLLATE "default" PRIMARY KEY,
         sess JSON NOT NULL,
         expire TIMESTAMP(6) NOT NULL
       )
       WITH (OIDS=FALSE)
-    `);
-    
-    await client.query(`
-      ALTER TABLE session 
-      ADD CONSTRAINT session_pkey 
-      PRIMARY KEY (sid) NOT DEFERRABLE INITIALLY IMMEDIATE
     `);
     
     console.log('Database initialized with appointments and session tables');
