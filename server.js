@@ -1,8 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const db = require('./db');
+const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +13,14 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
+
+// Povezivanje s bazom podataka
+const db = new sqlite3.Database('./database.sqlite', (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log('Connected to the SQLite database.');
+});
 
 // Endpoint za provjeru dostupnosti
 app.get('/api/check-availability', async (req, res) => {
@@ -74,15 +84,121 @@ app.get('/api/appointments', async (req, res) => {
 });
 
 // Admin login endpoint
-app.post('/api/admin-login', (req, res) => {
+app.post('/api/admin-login', async (req, res) => {
   const { username, password } = req.body;
-  // Ovdje biste trebali implementirati pravu autentifikaciju
-  // Ovo je samo primjer i nije sigurno za produkciju
-  if (username === 'admin' && password === 'password') {
-    res.json({ success: true });
+
+  if (username === admin.username && await bcrypt.compare(password, admin.password)) {
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token });
   } else {
-    res.status(401).json({ success: false });
+    res.status(401).json({ error: 'Neispravno korisničko ime ili lozinka' });
   }
+});
+
+// Middleware za provjeru JWT tokena
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
+
+// Zaštićena ruta za admin dashboard
+app.get('/api/admin-dashboard', authenticateToken, (req, res) => {
+  res.json({ message: 'Dobrodošli na admin nadzornu ploču!' });
+});
+
+// Ruta za dohvaćanje rezervacija
+app.get('/api/reservations', authenticateToken, (req, res) => {
+  const date = req.query.date;
+  db.all(`SELECT * FROM reservations WHERE date = ?`, [date], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json(rows);
+  });
+});
+
+// Ruta za dohvaćanje usluga
+app.get('/api/services', authenticateToken, (req, res) => {
+  db.all(`SELECT * FROM services`, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json(rows);
+  });
+});
+
+// Ruta za dodavanje nove usluge
+app.post('/api/services', authenticateToken, (req, res) => {
+  const { name, duration, price } = req.body;
+  db.run(`INSERT INTO services (name, duration, price) VALUES (?, ?, ?)`, [name, duration, price], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ id: this.lastID });
+  });
+});
+
+// Ruta za uređivanje rezervacije
+app.put('/api/reservations/:id', authenticateToken, (req, res) => {
+  const { date, time, name, service } = req.body;
+  db.run(`UPDATE reservations SET date = ?, time = ?, name = ?, service = ? WHERE id = ?`, 
+    [date, time, name, service, req.params.id], 
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({ changes: this.changes });
+    }
+  );
+});
+
+// Ruta za brisanje rezervacije
+app.delete('/api/reservations/:id', authenticateToken, (req, res) => {
+  db.run(`DELETE FROM reservations WHERE id = ?`, req.params.id, function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ changes: this.changes });
+  });
+});
+
+// Ruta za uređivanje usluge
+app.put('/api/services/:id', authenticateToken, (req, res) => {
+  const { name, duration, price } = req.body;
+  db.run(`UPDATE services SET name = ?, duration = ?, price = ? WHERE id = ?`, 
+    [name, duration, price, req.params.id], 
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({ changes: this.changes });
+    }
+  );
+});
+
+// Ruta za brisanje usluge
+app.delete('/api/services/:id', authenticateToken, (req, res) => {
+  db.run(`DELETE FROM services WHERE id = ?`, req.params.id, function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ changes: this.changes });
+  });
 });
 
 // Rute za serviranje HTML stranica
@@ -103,6 +219,14 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Nešto je pošlo po zlu!');
 });
+
+// Simulirani podaci administratora (u stvarnosti, ovo bi bilo u bazi podataka)
+const admin = {
+  username: 'admin',
+  password: '$2b$10$X4kv7j5ZcG2bYOvhXkoOyeLdNrA9vVVgSSadlQAq1MjQ4CN5XuQOy' // bcrypt hash za 'password123'
+};
+
+const JWT_SECRET = 'vaš_tajni_ključ'; // U produkciji, ovo bi trebalo biti u env varijabli
 
 // Pokreni server
 app.listen(PORT, () => {

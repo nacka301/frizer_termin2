@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('adminToken', data.token);
                 window.location.href = '/admin-dashboard.html';
             } else {
                 alert('Neispravno korisničko ime ili lozinka');
