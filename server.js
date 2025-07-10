@@ -4,6 +4,8 @@ const path = require('path');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg');
 const db = require('./db');
 
 const app = express();
@@ -14,7 +16,16 @@ console.log('Starting server...');
 console.log('Environment:', process.env.NODE_ENV);
 
 // Session configuration
+const sessionPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
 app.use(session({
+  store: new pgSession({
+    pool: sessionPool,
+    tableName: 'session'
+  }),
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
@@ -102,7 +113,7 @@ app.post('/api/admin-login', async (req, res) => {
   try {
     // In a real application, you would fetch this from a database
     const adminUsername = 'admin';
-    const adminPasswordHash = '$2b$10$X4kv7j5ZcG2bYOvhXkoOyeLdNrA9vVVgSSadlQAq1MjQ4CN5XuQOy'; // bcrypt hash for 'password123'
+    const adminPasswordHash = '$2b$10$Z3geB0GyQdNF2k6pU.3PDO./rTustA8q2KFo/vo9dAWPXN5eijjXOe'; // bcrypt hash for 'password123'
 
     if (username === adminUsername && await bcrypt.compare(password, adminPasswordHash)) {
       req.session.isAdmin = true;
