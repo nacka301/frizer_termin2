@@ -4,7 +4,7 @@ const path = require('path');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
+// const pgSession = require('connect-pg-simple')(session);
 const { Pool } = require('pg');
 const db = require('./db');
 
@@ -16,16 +16,16 @@ console.log('Starting server...');
 console.log('Environment:', process.env.NODE_ENV);
 
 // Session configuration
-const sessionPool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+// const sessionPool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+// });
 
 app.use(session({
-  store: new pgSession({
-    pool: sessionPool,
-    tableName: 'session'
-  }),
+  // store: new pgSession({
+  //   pool: sessionPool,
+  //   tableName: 'session'
+  // }),
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
