@@ -1,102 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Lora', serif;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #ffffff;
-        }
-
-        .grove-core {
-            position: relative;
-            width: 320px;
-            padding: 30px 25px;
-            background: #f0f0f0;
-            border-radius: 30px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
-            color: #1e3c8c;
-            text-align: center;
-            font-size: 28px;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-        }
-
-        .input-vine {
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        .input-vine input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(30, 60, 140, 0.05);
-            border: 2px solid rgba(30, 60, 140, 0.7);
-            border-radius: 12px;
-            color: #1e3c8c;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.5s ease;
-        }
-
-        .input-vine input:focus {
-            border-color: #c83232;
-            box-shadow: 0 0 10px rgba(200, 50, 50, 0.3);
-        }
-
-        .input-vine label {
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            color: #1e3c8c;
-            font-size: 14px;
-            background: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 10px;
-            transition: all 0.5s ease;
-        }
-
-        .input-vine input:focus + label {
-            color: #c83232;
-        }
-
-        .blossom-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(45deg, #1e3c8c, #c83232);
-            border: none;
-            border-radius: 40px;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.6s ease;
-        }
-
-        .blossom-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
-    <div class="grove-core">
+    <div id="loginSection" class="grove-core">
         <h2>Admin Login</h2>
         <form id="groveForm">
             <div class="input-vine">
@@ -111,12 +23,13 @@
         </form>
     </div>
 
-    <script>
-        document.getElementById('groveForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Ovdje dodajte logiku za prijavu
-            alert('Login attempt (Demo)');
-        });
-    </script>
+    <div id="calendarSection" style="display: none;">
+        <h2>Kalendar termina</h2>
+        <div id="calendar"></div>
+        <div id="appointments"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="admin-login.js"></script>
 </body>
 </html>
