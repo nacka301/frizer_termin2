@@ -113,7 +113,7 @@ app.post('/api/admin-login', async (req, res) => {
   try {
     // In a real application, you would fetch this from a database
     const adminUsername = 'admin';
-    const adminPasswordHash = '$2b$10$cL0UGgVIQFNzjV43gn5IA.cedI.JaOKh5zhjlC.ELFTZqbw6Naboy'; // bcrypt hash for 'password123'
+    const adminPasswordHash = '$2b$10$aXguERktMujmpIce1UBaVuZCmjVxk5H9rINLu4FGGD.F70oQ4EJU.'; // bcrypt hash for 'password123'
 
     if (username === adminUsername && await bcrypt.compare(password, adminPasswordHash)) {
       req.session.isAdmin = true;
