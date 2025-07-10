@@ -505,58 +505,7 @@ footer {
     margin-top: 1rem;
 }
 
-/* Enhanced hover effects */
-.service-item:hover .service-icon {
-    transform: scale(1.1);
-    transition: transform 0.3s ease;
-}
 
-.appointment-card:hover .appointment-time i {
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-/* Improved form focus states */
-.form-group input:focus {
-    transform: scale(1.02);
-}
-
-.reservation-form .form-group input:focus + i,
-#admin-login-form .form-group input:focus + i {
-    color: #764ba2;
-    transform: translateY(-50%) scale(1.2);
-}
-
-/* Enhanced button animations */
-.cta-button, .book-btn, .confirm-btn, .logout-btn, .delete-btn {
-    position: relative;
-    overflow: hidden;
-}
-
-.cta-button::before, .book-btn::before, .confirm-btn::before, 
-.logout-btn::before, .delete-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    transition: all 0.6s ease;
-    transform: translate(-50%, -50%);
-}
-
-.cta-button:hover::before, .book-btn:hover::before, .confirm-btn:hover::before,
-.logout-btn:hover::before, .delete-btn:hover::before {
-    width: 300px;
-    height: 300px;
-}
 
 /* Improved flatpickr styles */
 .flatpickr-calendar {
@@ -574,34 +523,7 @@ footer {
     background: rgba(102, 126, 234, 0.1) !important;
 }
 
-/* Scroll to top button */
-.scroll-top {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
-    opacity: 0;
-    visibility: hidden;
-    z-index: 999;
-}
 
-.scroll-top.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
-.scroll-top:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {
