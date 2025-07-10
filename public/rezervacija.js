@@ -1,3 +1,40 @@
+// Modal funkcije
+function showSuccessModal(appointment) {
+  const modal = document.getElementById('successModal');
+  const modalDetails = document.getElementById('modalDetails');
+  
+  // Formatiraj datum i vrijeme
+  const dateTime = new Date(appointment.datetime);
+  const formattedDate = dateTime.toLocaleDateString('hr-HR');
+  const formattedTime = dateTime.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
+  
+  modalDetails.innerHTML = `
+    <p><strong>Ime:</strong> ${appointment.ime} ${appointment.prezime}</p>
+    <p><strong>Usluga:</strong> ${appointment.service}</p>
+    <p><strong>Datum:</strong> ${formattedDate}</p>
+    <p><strong>Vrijeme:</strong> ${formattedTime}</p>
+  `;
+  
+  modal.style.display = 'block';
+}
+
+function closeModal() {
+  const modal = document.getElementById('successModal');
+  modal.style.display = 'none';
+  // Preusmjeri na početnu stranicu
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 300);
+}
+
+// Zatvori modal klikom izvan njega
+window.onclick = function(event) {
+  const modal = document.getElementById('successModal');
+  if (event.target == modal) {
+    closeModal();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('reservation-form');
   const dateInput = document.getElementById('date');
@@ -119,8 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (response.ok) {
-        feedback.innerText = 'Termin uspješno rezerviran!';
-        feedback.style.color = 'green';
+        // Pokaži modal sa potvrdom
+        showSuccessModal(data.appointment);
         form.reset();
       } else {
         feedback.innerText = data.error || 'Greška pri rezervaciji.';
