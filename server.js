@@ -193,7 +193,7 @@ app.get('/admin-login', (req, res) => {
 });
 
 app.get('/admin-dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
+  res.sendFile(path.join(__dirname, 'admin_dashboard.html'));
 });
 
 // Root route
