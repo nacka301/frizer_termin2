@@ -125,6 +125,32 @@ async function getAvailableSlots(date, service) {
   }
 }
 
+// Funkcija za dohvaćanje termina za određeni datum
+async function getAppointmentsByDate(date) {
+  try {
+    const formattedDate = moment(date, "YYYY-MM-DD").format("YYYY-MM-DD");
+    const result = await pool.query(
+      'SELECT *, TO_CHAR(datetime, \'HH24:MI\') as time FROM appointments WHERE DATE(datetime) = $1 ORDER BY datetime',
+      [formattedDate]
+    );
+    return result.rows;
+  } catch (error) {
+    console.error('Error getting appointments by date:', error);
+    throw error;
+  }
+}
+
+// Funkcija za brisanje termina
+async function deleteAppointment(id) {
+  try {
+    const result = await pool.query('DELETE FROM appointments WHERE id = $1 RETURNING *', [id]);
+    return result.rows.length > 0;
+  } catch (error) {
+    console.error('Error deleting appointment:', error);
+    throw error;
+  }
+}
+
 // Izvoz funkcija za korištenje u drugim dijelovima aplikacije
 module.exports = {
   pool,
@@ -132,6 +158,8 @@ module.exports = {
   checkAvailability,
   bookAppointment,
   getAllAppointments,
+  getAppointmentsByDate,
+  deleteAppointment,
   getAvailableSlots
 };
 
