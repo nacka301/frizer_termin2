@@ -3,87 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Admin Dashboard - Frizerski salon</title>
+    <link rel="stylesheet" href="public/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .calendar-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .appointments-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .appointment-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .appointment-time {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        .appointment-client {
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+        .appointment-service {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .appointment-contact {
+            color: #34495e;
+            font-size: 0.9em;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            float: right;
+        }
+        .no-appointments {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Admin Nadzorna Ploča</h1>
-        <p id="welcome-message"></p>
-        <button id="logout-btn">Odjava</button>
-    </header>
-
-    <main>
-        <section id="reservations">
-            <h2>Pregled Rezervacija</h2>
-            <div id="date-filter">
-                <input type="text" id="date-picker" placeholder="Odaberi datum">
-            </div>
-            <table id="reservations-table">
-                <thead>
-                    <tr>
-                        <th>Datum</th>
-                        <th>Vrijeme</th>
-                        <th>Ime</th>
-                        <th>Usluga</th>
-                        <th>Akcije</th>
-                    </tr>
-                </thead>
-                <tbody id="reservations-body"></tbody>
-            </table>
-        </section>
-
-        <section id="services">
-            <h2>Upravljanje Uslugama</h2>
-            <form id="add-service-form">
-                <input type="text" id="service-name" placeholder="Naziv usluge" required>
-                <input type="number" id="service-duration" placeholder="Trajanje (min)" required>
-                <input type="number" id="service-price" placeholder="Cijena" required>
-                <button type="submit">Dodaj Uslugu</button>
-            </form>
-            <table id="services-table">
-                <thead>
-                    <tr>
-                        <th>Naziv</th>
-                        <th>Trajanje</th>
-                        <th>Cijena</th>
-                        <th>Akcije</th>
-                    </tr>
-                </thead>
-                <tbody id="services-body"></tbody>
-            </table>
-        </section>
-    </main>
-
-    <!-- Modalni dijalog za uređivanje rezervacije -->
-    <div id="editReservationModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Uredi rezervaciju</h2>
-            <form id="editReservationForm">
-                <input type="hidden" id="editReservationId">
-                <input type="date" id="editReservationDate" required>
-                <input type="time" id="editReservationTime" required>
-                <input type="text" id="editReservationName" placeholder="Ime" required>
-                <input type="text" id="editReservationService" placeholder="Usluga" required>
-                <button type="submit">Spremi promjene</button>
-            </form>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Admin Dashboard - Frizerski salon</h1>
+            <button class="logout-btn" onclick="logout()">Odjavi se</button>
         </div>
-    </div>
-
-    <!-- Modalni dijalog za uređivanje usluge -->
-    <div id="editServiceModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Uredi uslugu</h2>
-            <form id="editServiceForm">
-                <input type="hidden" id="editServiceId">
-                <input type="text" id="editServiceName" placeholder="Naziv usluge" required>
-                <input type="number" id="editServiceDuration" placeholder="Trajanje (min)" required>
-                <input type="number" id="editServicePrice" placeholder="Cijena" required>
-                <button type="submit">Spremi promjene</button>
-            </form>
+        
+        <div class="calendar-section">
+            <h2>Odaberite datum</h2>
+            <div id="calendar"></div>
+        </div>
+        
+        <div class="appointments-section">
+            <h2>Rezervacije za odabrani dan</h2>
+            <div id="selectedDate">Molimo odaberite datum u kalendaru</div>
+            <div id="appointments"></div>
         </div>
     </div>
 

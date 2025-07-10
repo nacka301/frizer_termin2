@@ -1,270 +1,141 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-        window.location.href = '/admin-login.html';
-        return;
-    }
+    const calendarEl = document.getElementById('calendar');
+    const appointmentsDiv = document.getElementById('appointments');
+    const selectedDateDiv = document.getElementById('selectedDate');
 
-    const welcomeMessage = document.getElementById('welcome-message');
-    const logoutBtn = document.getElementById('logout-btn');
-    const datePicker = document.getElementById('date-picker');
-    const reservationsBody = document.getElementById('reservations-body');
-    const addServiceForm = document.getElementById('add-service-form');
-    const servicesBody = document.getElementById('services-body');
-
-    // Inicijalizacija Flatpickr za odabir datuma
-    flatpickr(datePicker, {
+    // Inicijalizacija kalendara
+    flatpickr(calendarEl, {
+        inline: true,
         dateFormat: "Y-m-d",
-        onChange: function(selectedDates) {
-            loadReservations(selectedDates[0]);
-        }
-    });
-
-    // Učitaj rezervacije za današnji datum pri učitavanju stranice
-    loadReservations(new Date());
-
-    // Učitaj usluge
-    loadServices();
-
-    // Dohvati podatke o prijavljenom administratoru
-    fetch('/api/admin-dashboard', {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Nije autoriziran');
-        }
-        return response.json();
-    })
-    .then(data => {
-        welcomeMessage.textContent = `Dobrodošli, ${data.username}!`;
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        window.location.href = '/admin-login.html';
-    });
-
-    // Funkcija za učitavanje rezervacija
-    function loadReservations(date) {
-        fetch(`/api/reservations?date=${date.toISOString().split('T')[0]}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        defaultDate: new Date(),
+        onChange: function(selectedDates, dateStr, instance) {
+            if (dateStr) {
+                fetchAppointments(dateStr);
+                selectedDateDiv.innerHTML = `<strong>Rezervacije za ${formatDateDisplay(dateStr)}</strong>`;
             }
-        })
-        .then(response => response.json())
-        .then(reservations => {
-            reservationsBody.innerHTML = '';
-            reservations.forEach(reservation => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${reservation.date}</td>
-                    <td>${reservation.time}</td>
-                    <td>${reservation.name}</td>
-                    <td>${reservation.service}</td>
-                    <td>
-                        <button onclick="editReservation(${reservation.id})">Uredi</button>
-                        <button onclick="deleteReservation(${reservation.id})">Obriši</button>
-                    </td>
-                `;
-                reservationsBody.appendChild(row);
-            });
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    // Funkcija za učitavanje usluga
-    function loadServices() {
-        fetch('/api/services', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => response.json())
-        .then(services => {
-            servicesBody.innerHTML = '';
-            services.forEach(service => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${service.name}</td>
-                    <td>${service.duration} min</td>
-                    <td>${service.price} kn</td>
-                    <td>
-                        <button onclick="editService(${service.id})">Uredi</button>
-                        <button onclick="deleteService(${service.id})">Obriši</button>
-                    </td>
-                `;
-                servicesBody.appendChild(row);
-            });
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    // Dodavanje nove usluge
-    addServiceForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const name = document.getElementById('service-name').value;
-        const duration = document.getElementById('service-duration').value;
-        const price = document.getElementById('service-price').value;
-
-        fetch('/api/services', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ name, duration, price })
-        })
-        .then(response => response.json())
-        .then(() => {
-            loadServices();
-            addServiceForm.reset();
-        })
-        .catch(error => console.error('Error:', error));
-    });
-
-    // Odjava
-    logoutBtn.addEventListener('click', function() {
-        localStorage.removeItem('adminToken');
-        window.location.href = '/admin-login.html';
-    });
-
-    const editReservationModal = document.getElementById('editReservationModal');
-    const editServiceModal = document.getElementById('editServiceModal');
-    const closeButtons = document.getElementsByClassName('close');
-
-    // Zatvaranje modalnih dijaloga
-    for (let i = 0; i < closeButtons.length; i++) {
-        closeButtons[i].onclick = function() {
-            editReservationModal.style.display = "none";
-            editServiceModal.style.display = "none";
         }
-    }
-
-    window.onclick = function(event) {
-        if (event.target == editReservationModal) {
-            editReservationModal.style.display = "none";
-        }
-        if (event.target == editServiceModal) {
-            editServiceModal.style.display = "none";
-        }
-    }
-
-    // Funkcije za uređivanje i brisanje rezervacija i usluga
-    window.editReservation = function(id) {
-        // Dohvati postojeće podatke o rezervaciji
-        fetch(`/api/reservations/${id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => response.json())
-        .then(reservation => {
-            document.getElementById('editReservationId').value = id;
-            document.getElementById('editReservationDate').value = reservation.date;
-            document.getElementById('editReservationTime').value = reservation.time;
-            document.getElementById('editReservationName').value = reservation.name;
-            document.getElementById('editReservationService').value = reservation.service;
-            editReservationModal.style.display = "block";
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    document.getElementById('editReservationForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const id = document.getElementById('editReservationId').value;
-        const date = document.getElementById('editReservationDate').value;
-        const time = document.getElementById('editReservationTime').value;
-        const name = document.getElementById('editReservationName').value;
-        const service = document.getElementById('editReservationService').value;
-
-        fetch(`/api/reservations/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ date, time, name, service })
-        })
-        .then(response => response.json())
-        .then(() => {
-            loadReservations(new Date(date));
-            editReservationModal.style.display = "none";
-        })
-        .catch(error => console.error('Error:', error));
     });
 
-    window.editService = function(id) {
-        // Dohvati postojeće podatke o usluzi
-        fetch(`/api/services/${id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => response.json())
-        .then(service => {
-            document.getElementById('editServiceId').value = id;
-            document.getElementById('editServiceName').value = service.name;
-            document.getElementById('editServiceDuration').value = service.duration;
-            document.getElementById('editServicePrice').value = service.price;
-            editServiceModal.style.display = "block";
-        })
-        .catch(error => console.error('Error:', error));
+    // Učitaj rezervacije za današnji dan po defaultu
+    const today = new Date().toISOString().split('T')[0];
+    fetchAppointments(today);
+    selectedDateDiv.innerHTML = `<strong>Rezervacije za ${formatDateDisplay(today)}</strong>`;
+
+    // Funkcija za formatiranje datuma za prikaz
+    function formatDateDisplay(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('hr-HR', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
     }
 
-    document.getElementById('editServiceForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const id = document.getElementById('editServiceId').value;
-        const name = document.getElementById('editServiceName').value;
-        const duration = document.getElementById('editServiceDuration').value;
-        const price = document.getElementById('editServicePrice').value;
-
-        fetch(`/api/services/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ name, duration, price })
-        })
-        .then(response => response.json())
-        .then(() => {
-            loadServices();
-            editServiceModal.style.display = "none";
-        })
-        .catch(error => console.error('Error:', error));
-    });
-
-    window.deleteReservation = function(id) {
-        if (confirm("Jeste li sigurni da želite obrisati ovu rezervaciju?")) {
-            fetch(`/api/reservations/${id}`, {
-                method: 'DELETE',
+    // Funkcija za dohvaćanje rezervacija s servera
+    async function fetchAppointments(date) {
+        try {
+            appointmentsDiv.innerHTML = '<p>Učitavanje...</p>';
+            
+            const response = await fetch(`/api/appointments-by-date?date=${date}`, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            .then(response => response.json())
-            .then(() => {
-                loadReservations(new Date(datePicker.value));
-            })
-            .catch(error => console.error('Error:', error));
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+                const appointments = await response.json();
+                displayAppointments(appointments);
+            } else if (response.status === 401) {
+                alert('Vaša sesija je istekla. Molimo prijavite se ponovo.');
+                window.location.href = '/admin-login';
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Server response:', response.status, errorData);
+                throw new Error(`Greška pri dohvaćanju rezervacija: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error fetching appointments:', error);
+            appointmentsDiv.innerHTML = `<p style="color: red;">Greška pri učitavanju rezervacija: ${error.message}<br>Molimo pokušajte ponovo.</p>`;
         }
     }
 
-    window.deleteService = function(id) {
-        if (confirm("Jeste li sigurni da želite obrisati ovu uslugu?")) {
-            fetch(`/api/services/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            .then(response => response.json())
-            .then(() => {
-                loadServices();
-            })
-            .catch(error => console.error('Error:', error));
+    // Funkcija za prikaz rezervacija
+    function displayAppointments(appointments) {
+        if (appointments.length === 0) {
+            appointmentsDiv.innerHTML = '<div class="no-appointments">Nema rezervacija za ovaj dan</div>';
+            return;
         }
+
+        let html = '';
+        appointments.forEach(appointment => {
+            html += `
+                <div class="appointment-card">
+                    <div class="appointment-time">${appointment.time}</div>
+                    <div class="appointment-client">${appointment.ime} ${appointment.prezime}</div>
+                    <div class="appointment-service">${appointment.service} (${appointment.duration} min) - ${appointment.price}€</div>
+                    <div class="appointment-contact">
+                        📞 ${appointment.mobitel} | 📧 ${appointment.email}
+                    </div>
+                    <button class="delete-btn" onclick="deleteAppointment(${appointment.id})">
+                        Obriši
+                    </button>
+                    <div style="clear: both;"></div>
+                </div>
+            `;
+        });
+        appointmentsDiv.innerHTML = html;
     }
+
+    // Globalna funkcija za brisanje rezervacije
+    window.deleteAppointment = async function(appointmentId) {
+        if (confirm('Jeste li sigurni da želite obrisati ovu rezervaciju?')) {
+            try {
+                const response = await fetch(`/api/appointments/${appointmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    alert('Rezervacija je uspješno obrisana');
+                    // Ponovno učitaj rezervacije za trenutni datum
+                    const currentDate = document.querySelector('.flatpickr-day.selected')?.dateObj;
+                    if (currentDate) {
+                        const dateStr = currentDate.toISOString().split('T')[0];
+                        fetchAppointments(dateStr);
+                    }
+                } else if (response.status === 401) {
+                    alert('Vaša sesija je istekla. Molimo prijavite se ponovo.');
+                    window.location.href = '/admin-login';
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Delete response:', response.status, errorData);
+                    throw new Error(`Greška pri brisanju rezervacije: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error deleting appointment:', error);
+                alert('Greška pri brisanju rezervacije. Molimo pokušajte ponovo.');
+            }
+        }
+    };
 });
+
+// Funkcija za odjavu
+function logout() {
+    if (confirm('Jeste li sigurni da se želite odjaviti?')) {
+        fetch('/api/admin-logout', {
+            method: 'POST',
+            credentials: 'same-origin'
+        }).then(() => {
+            window.location.href = '/admin-login';
+        }).catch(error => {
+            console.error('Logout error:', error);
+            window.location.href = '/admin-login';
+        });
+    }
+}

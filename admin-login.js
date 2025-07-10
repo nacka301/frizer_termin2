@@ -6,25 +6,36 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
+        // Onemogući dugme tokom slanja zahtjeva
+        const submitButton = loginForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Prijavljivanje...';
+
         try {
             const response = await fetch('/api/admin-login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'same-origin',
                 body: JSON.stringify({ username, password }),
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('adminToken', data.token);
-                window.location.href = '/admin-dashboard.html';
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                alert('Uspješno ste se prijavili!');
+                window.location.href = '/admin-dashboard';
             } else {
-                alert('Neispravno korisničko ime ili lozinka');
+                alert(data.message || 'Neispravno korisničko ime ili lozinka');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Došlo je do greške prilikom prijave');
+            alert('Došlo je do greške prilikom prijave. Molimo pokušajte ponovo.');
+        } finally {
+            // Omogući dugme ponovo
+            submitButton.disabled = false;
+            submitButton.textContent = 'Login';
         }
     });
 });
