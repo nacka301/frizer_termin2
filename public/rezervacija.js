@@ -4,10 +4,9 @@ function showSuccessModal(appointment) {
   const modal = document.getElementById('successModal');
   const modalDetails = document.getElementById('modalDetails');
   
-  // Formatiraj datum i vrijeme
-  const dateTime = new Date(appointment.datetime);
-  const formattedDate = dateTime.toLocaleDateString('hr-HR');
-  const formattedTime = dateTime.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
+  // Koristi date i time koje server šalje direktno
+  const formattedDate = appointment.date || 'Nepoznat datum';
+  const formattedTime = appointment.time || 'Nepoznato vreme';
   
   modalDetails.innerHTML = `
     <p><strong>Ime:</strong> ${appointment.ime} ${appointment.prezime}</p>

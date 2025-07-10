@@ -80,7 +80,20 @@ app.post('/api/book', async (req, res) => {
   try {
     const booked = await db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
     if (booked) {
-      res.json({ success: true, message: 'Termin uspješno rezerviran!', appointment: { ime, prezime, service, datetime } });
+      // Parsiranje datetime-a za lepši prikaz u modalu
+      const [datePart, timePart] = datetime.split('T');
+      res.json({ 
+        success: true, 
+        message: 'Termin uspješno rezerviran!', 
+        appointment: { 
+          ime, 
+          prezime, 
+          service, 
+          date: datePart,
+          time: timePart,
+          datetime 
+        } 
+      });
     } else {
       res.status(409).json({ error: 'Termin više nije dostupan.' });
     }
