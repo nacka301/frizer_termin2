@@ -1,26 +1,51 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const session = require('express-session');
+const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Debug logging
+console.log('Starting server...');
+console.log('Environment:', process.env.NODE_ENV);
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', 
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// CORS configuration for Render
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://frizerke-html.onrender.com', 'https://your-app-name.onrender.com'] 
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
-// Povezivanje s bazom podataka
-const db = new sqlite3.Database('./database.sqlite', (err) => {
-  if (err) {
-    console.error(err.message);
+// Middleware to check if user is authenticated
+function requireAuth(req, res, next) {
+  if (!req.session || !req.session.isAdmin) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
-  console.log('Connected to the SQLite database.');
-});
+  next();
+}
 
 // Endpoint za provjeru dostupnosti
 app.get('/api/check-availability', async (req, res) => {
@@ -68,137 +93,82 @@ app.get('/api/available-slots', async (req, res) => {
   }
 });
 
-// Endpoint za dohvaćanje svih rezervacija
-app.get('/api/appointments', async (req, res) => {
+// Admin login endpoint
+app.post('/api/admin-login', async (req, res) => {
+  console.log('Admin login attempt:', req.body);
+  const { username, password } = req.body;
+
   try {
-    const appointments = await db.getAllAppointments();
-    const events = appointments.map(appointment => ({
-      title: `${appointment.ime} ${appointment.prezime} - ${appointment.service}`,
-      start: appointment.datetime
-    }));
-    res.json(events);
+    // In a real application, you would fetch this from a database
+    const adminUsername = 'admin';
+    const adminPasswordHash = '$2b$10$X4kv7j5ZcG2bYOvhXkoOyeLdNrA9vVVgSSadlQAq1MjQ4CN5XuQOy'; // bcrypt hash for 'password123'
+
+    if (username === adminUsername && await bcrypt.compare(password, adminPasswordHash)) {
+      req.session.isAdmin = true;
+      req.session.username = username;
+      console.log('Admin login successful');
+      res.json({ success: true, message: 'Login successful' });
+    } else {
+      console.log('Admin login failed');
+      res.status(401).json({ error: 'Neispravno korisničko ime ili lozinka' });
+    }
+  } catch (error) {
+    console.error('Error during admin login:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin logout endpoint
+app.post('/api/admin-logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error destroying session:', err);
+      return res.status(500).json({ error: 'Could not log out' });
+    }
+    res.json({ success: true, message: 'Logged out successfully' });
+  });
+});
+
+// Check admin session
+app.get('/api/admin-session', (req, res) => {
+  if (req.session && req.session.isAdmin) {
+    res.json({ isAdmin: true, username: req.session.username });
+  } else {
+    res.json({ isAdmin: false });
+  }
+});
+
+// Get appointments for a specific date
+app.get('/api/admin/appointments', requireAuth, async (req, res) => {
+  const { date } = req.query;
+  console.log('Fetching appointments for date:', date);
+  
+  try {
+    const appointments = await db.getAppointmentsByDate(date);
+    console.log('Found appointments:', appointments);
+    res.json(appointments);
   } catch (error) {
     console.error('Error fetching appointments:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Admin login endpoint
-app.post('/api/admin-login', async (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === admin.username && await bcrypt.compare(password, admin.password)) {
-    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
-  } else {
-    res.status(401).json({ error: 'Neispravno korisničko ime ili lozinka' });
+// Delete appointment
+app.delete('/api/admin/appointments/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  console.log('Deleting appointment with ID:', id);
+  
+  try {
+    const deleted = await db.deleteAppointment(id);
+    if (deleted) {
+      res.json({ success: true, message: 'Appointment deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Appointment not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting appointment:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
-
-// Middleware za provjeru JWT tokena
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token == null) return res.sendStatus(401);
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-}
-
-// Zaštićena ruta za admin dashboard
-app.get('/api/admin-dashboard', authenticateToken, (req, res) => {
-  res.json({ message: 'Dobrodošli na admin nadzornu ploču!' });
-});
-
-// Ruta za dohvaćanje rezervacija
-app.get('/api/reservations', authenticateToken, (req, res) => {
-  const date = req.query.date;
-  db.all(`SELECT * FROM reservations WHERE date = ?`, [date], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json(rows);
-  });
-});
-
-// Ruta za dohvaćanje usluga
-app.get('/api/services', authenticateToken, (req, res) => {
-  db.all(`SELECT * FROM services`, [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json(rows);
-  });
-});
-
-// Ruta za dodavanje nove usluge
-app.post('/api/services', authenticateToken, (req, res) => {
-  const { name, duration, price } = req.body;
-  db.run(`INSERT INTO services (name, duration, price) VALUES (?, ?, ?)`, [name, duration, price], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({ id: this.lastID });
-  });
-});
-
-// Ruta za uređivanje rezervacije
-app.put('/api/reservations/:id', authenticateToken, (req, res) => {
-  const { date, time, name, service } = req.body;
-  db.run(`UPDATE reservations SET date = ?, time = ?, name = ?, service = ? WHERE id = ?`, 
-    [date, time, name, service, req.params.id], 
-    function(err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json({ changes: this.changes });
-    }
-  );
-});
-
-// Ruta za brisanje rezervacije
-app.delete('/api/reservations/:id', authenticateToken, (req, res) => {
-  db.run(`DELETE FROM reservations WHERE id = ?`, req.params.id, function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({ changes: this.changes });
-  });
-});
-
-// Ruta za uređivanje usluge
-app.put('/api/services/:id', authenticateToken, (req, res) => {
-  const { name, duration, price } = req.body;
-  db.run(`UPDATE services SET name = ?, duration = ?, price = ? WHERE id = ?`, 
-    [name, duration, price, req.params.id], 
-    function(err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json({ changes: this.changes });
-    }
-  );
-});
-
-// Ruta za brisanje usluge
-app.delete('/api/services/:id', authenticateToken, (req, res) => {
-  db.run(`DELETE FROM services WHERE id = ?`, req.params.id, function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({ changes: this.changes });
-  });
 });
 
 // Rute za serviranje HTML stranica
@@ -214,19 +184,16 @@ app.get('/admin-dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Općeniti error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Nešto je pošlo po zlu!');
 });
-
-// Simulirani podaci administratora (u stvarnosti, ovo bi bilo u bazi podataka)
-const admin = {
-  username: 'admin',
-  password: '$2b$10$X4kv7j5ZcG2bYOvhXkoOyeLdNrA9vVVgSSadlQAq1MjQ4CN5XuQOy' // bcrypt hash za 'password123'
-};
-
-const JWT_SECRET = 'vaš_tajni_ključ'; // U produkciji, ovo bi trebalo biti u env varijabli
 
 // Pokreni server
 app.listen(PORT, () => {
