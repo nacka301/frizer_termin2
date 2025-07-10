@@ -428,3 +428,50 @@ footer {
     padding: 15px;
     border-radius: 5px;
 }
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0e6d2;
+    font-family: Arial, sans-serif;
+}
+
+.admin-login-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.admin-login-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+#admin-login-form input {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#admin-login-form button {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(to right, #4e54c8, #8f94fb);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#admin-login-form button:hover {
+    background: linear-gradient(to right, #3f45b6, #7a80f9);
+}

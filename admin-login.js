@@ -23,26 +23,33 @@ document.getElementById('admin-login-form').addEventListener('submit', async (e)
     }
 });
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('groveForm');
-    const loginSection = document.getElementById('loginSection');
-    const calendarSection = document.getElementById('calendarSection');
-    const appointmentsDiv = document.getElementById('appointments');
+    const loginForm = document.getElementById('admin-login-form');
 
-    loginForm.addEventListener('submit', function(e) {
+    loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const email = document.getElementById('email').value;
+        const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
-        // Ovdje biste normalno poslali zahtjev na server za provjeru
-        // Za demonstraciju, koristimo fiksne vrijednosti
-        if (email === 'admin@example.com' && password === 'password123') {
-            loginSection.style.display = 'none';
-            calendarSection.style.display = 'block';
-            initializeCalendar();
-        } else {
-            alert('Neispravni podaci za prijavu');
+        try {
+            const response = await fetch('/api/admin-login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (response.ok) {
+                window.location.href = '/admin-dashboard.html';
+            } else {
+                alert('Neispravno korisničko ime ili lozinka');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Došlo je do greške prilikom prijave');
         }
     });
+});
 
     function initializeCalendar() {
         flatpickr("#calendar", {
@@ -73,4 +80,4 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         });
     }
-});
+;
