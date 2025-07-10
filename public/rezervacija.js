@@ -84,19 +84,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const time = timeInput.value;
     if (date && time) {
       try {
+        // Show loading state
+        availabilityStatus.innerHTML = '<div class="loading"></div>';
+        
         const response = await fetch(`/api/check-availability?date=${date}&time=${time}`);
         const data = await response.json();
         if (data.available) {
-          availabilityStatus.innerText = 'Termin je dostupan!';
-          availabilityStatus.style.color = 'green';
+          availabilityStatus.innerHTML = '<i class="fas fa-check-circle"></i> Termin je dostupan!';
+          availabilityStatus.style.color = '#27ae60';
         } else {
-          availabilityStatus.innerText = 'Termin nije dostupan. Molimo odaberite drugi.';
-          availabilityStatus.style.color = 'red';
+          availabilityStatus.innerHTML = '<i class="fas fa-times-circle"></i> Termin nije dostupan. Molimo odaberite drugi.';
+          availabilityStatus.style.color = '#e74c3c';
         }
       } catch (err) {
         console.error(err);
-        availabilityStatus.innerText = 'Greška pri provjeri dostupnosti.';
-        availabilityStatus.style.color = 'red';
+        availabilityStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Greška pri provjeri dostupnosti.';
+        availabilityStatus.style.color = '#e74c3c';
       }
     }
   }
@@ -120,23 +123,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const prezime = document.getElementById('prezime').value;
     const mobitel = document.getElementById('mobitel').value;
     const email = document.getElementById('email').value;
+    const submitBtn = document.getElementById('confirm-booking');
 
     if (!date || !time || !ime || !prezime || !mobitel || !email) {
-      feedback.innerText = 'Molimo popunite sva polja.';
+      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Molimo popunite sva polja.';
+      feedback.style.color = '#e74c3c';
       return;
     }
 
     if (!isValidEmail(email)) {
-      feedback.innerText = 'Molimo unesite ispravnu email adresu.';
+      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Molimo unesite ispravnu email adresu.';
+      feedback.style.color = '#e74c3c';
       return;
     }
 
     if (!isValidPhoneNumber(mobitel)) {
-      feedback.innerText = 'Molimo unesite ispravan broj mobitela (9 ili 10 znamenki).';
+      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Molimo unesite ispravan broj mobitela (9 ili 10 znamenki).';
+      feedback.style.color = '#e74c3c';
       return;
     }
 
     try {
+      // Show loading state
+      const originalButtonText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rezerviram...';
+      submitBtn.disabled = true;
+      feedback.innerHTML = '';
+
       const response = await fetch('/api/book', {
         method: 'POST',
         headers: {
@@ -160,14 +173,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Pokaži modal sa potvrdom
         showSuccessModal(data.appointment);
         form.reset();
+        availabilityStatus.innerHTML = '';
       } else {
-        feedback.innerText = data.error || 'Greška pri rezervaciji.';
-        feedback.style.color = 'red';
+        feedback.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.error || 'Greška pri rezervaciji.'}`;
+        feedback.style.color = '#e74c3c';
       }
     } catch (err) {
       console.error(err);
-      feedback.innerText = 'Greška pri povezivanju sa serverom.';
-      feedback.style.color = 'red';
+      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Greška pri povezivanju sa serverom.';
+      feedback.style.color = '#e74c3c';
+    } finally {
+      // Restore button state
+      submitBtn.innerHTML = originalButtonText;
+      submitBtn.disabled = false;
     }
   });
 });

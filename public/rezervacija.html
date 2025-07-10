@@ -6,36 +6,53 @@
   <title>Rezervacija - Frizerski Salon Novica</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <header>
-    <h1>Rezervacija termina</h1>
-    <a href="index.html" class="back-link">Povratak na početnu</a>
+    <div class="container">
+      <h1><i class="fas fa-cut"></i> Rezervacija termina</h1>
+      <a href="index.html" class="back-link">
+        <i class="fas fa-arrow-left"></i> Povratak na početnu
+      </a>
+    </div>
   </header>
 
   <main class="reservation-container">
     <section id="booking-form" class="reservation-form">
-      <h2>Odaberi datum i vrijeme</h2>
+      <h2><i class="fas fa-calendar-check"></i> Odaberi datum i vrijeme</h2>
       <p id="selected-service" class="selected-service"></p>
       <form id="reservation-form">
         <div class="form-group">
+          <i class="fas fa-user"></i>
           <input type="text" id="ime" required placeholder="Ime">
         </div>
         <div class="form-group">
+          <i class="fas fa-user"></i>
           <input type="text" id="prezime" required placeholder="Prezime">
         </div>
         <div class="form-group">
+          <i class="fas fa-phone"></i>
           <input type="tel" id="mobitel" required placeholder="Broj mobitela">
         </div>
         <div class="form-group">
+          <i class="fas fa-envelope"></i>
           <input type="email" id="email" required placeholder="Email adresa">
         </div>
-        <div class="form-group datetime-container">
-          <input type="text" id="date" required placeholder="Datum">
-          <input type="text" id="time" required placeholder="Vrijeme">
+        <div class="datetime-container">
+          <div class="form-group">
+            <i class="fas fa-calendar"></i>
+            <input type="text" id="date" required placeholder="Datum">
+          </div>
+          <div class="form-group">
+            <i class="fas fa-clock"></i>
+            <input type="text" id="time" required placeholder="Vrijeme">
+          </div>
         </div>
         <p id="availability-status" class="availability-status"></p>
-        <button type="submit" id="confirm-booking" class="confirm-btn">Potvrdi rezervaciju</button>
+        <button type="submit" id="confirm-booking" class="confirm-btn">
+          <i class="fas fa-check"></i> Potvrdi rezervaciju
+        </button>
       </form>
       <p id="feedback" class="feedback"></p>
     </section>
@@ -44,21 +61,36 @@
   <!-- Success Modal -->
   <div id="successModal" class="modal" style="display: none;">
     <div class="modal-content">
-      <div class="success-icon">✓</div>
+      <div class="success-icon"><i class="fas fa-check-circle"></i></div>
       <h2>Rezervacija uspješna!</h2>
       <div id="modalDetails">
         <!-- Detalji rezervacije će biti uneseni dinamički -->
       </div>
       <p>Vaš termin je uspješno rezerviran.</p>
       <p>Doći ćete na vrijeme na svoju rezervaciju!</p>
-      <button class="close-modal" onclick="closeModal()">U redu</button>
+      <button class="close-modal" onclick="closeModal()">
+        <i class="fas fa-thumbs-up"></i> U redu
+      </button>
     </div>
   </div>
 
   <footer>
-    <p>Radno vrijeme: Pon-Pet 9-18h, Sub 9-14h</p>
-    <p>Adresa: Ulica Lipe 123, Zagreb</p>
-    <p>Telefon: 01 234 5678</p>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3><i class="fas fa-clock"></i> Radno vrijeme</h3>
+          <p>Ponedjeljak - Petak: 9:00 - 18:00</p>
+          <p>Subota: 9:00 - 14:00</p>
+          <p>Nedjelja: Zatvoreno</p>
+        </div>
+        <div class="footer-section">
+          <h3><i class="fas fa-map-marker-alt"></i> Kontakt</h3>
+          <p>Ulica Lipe 123, Zagreb</p>
+          <p>Telefon: 01 234 5678</p>
+          <p>Email: info@salonnovica.hr</p>
+        </div>
+      </div>
+    </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

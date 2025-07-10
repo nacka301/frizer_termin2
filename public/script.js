@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const availabilityStatus = document.getElementById('availability-status');
   const imeInput = document.getElementById('ime');
   const prezimeInput = document.getElementById('prezime');
+  const scrollTopBtn = document.getElementById('scrollTop');
 
   let selectedService = null;
 
@@ -26,24 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
     maxTime: "18:00",
   });
 
-// Otvori modal kad klikneš "Rezerviraj"
-bookButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    selectedService = {
-      service: button.dataset.service,
-      duration: button.dataset.duration,
-      price: button.dataset.price
-    };
+  // Otvori modal kad klikneš "Rezerviraj"
+  bookButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      selectedService = {
+        service: button.dataset.service,
+        duration: button.dataset.duration,
+        price: button.dataset.price
+      };
 
-    modal.style.display = 'flex';  // Promijenili smo 'block' u 'flex'
-    feedback.innerText = '';
-    dateInput.value = '';
-    timeInput.value = '';
-    availabilityStatus.innerText = '';
-    imeInput.value = '';
-    prezimeInput.value = '';
+      modal.style.display = 'flex';  // Promijenili smo 'block' u 'flex'
+      feedback.innerText = '';
+      dateInput.value = '';
+      timeInput.value = '';
+      availabilityStatus.innerText = '';
+      imeInput.value = '';
+      prezimeInput.value = '';
+    });
   });
-});
   // Zatvori modal
   closeModalBtn.addEventListener('click', () => {
     modal.style.display = 'none';
@@ -121,5 +122,65 @@ bookButtons.forEach(button => {
       feedback.innerText = 'Greška pri povezivanju sa serverom.';
       feedback.style.color = 'red';
     }
+  });
+
+  // Scroll to top functionality
+  window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 300) {
+      scrollTopBtn.classList.add('visible');
+    } else {
+      scrollTopBtn.classList.remove('visible');
+    }
+  });
+
+  scrollTopBtn.addEventListener('click', () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  });
+
+  // Enhanced loading states
+  function showLoading(element) {
+    element.innerHTML = '<div class="loading"></div><div class="loading-text">Učitavanje...</div>';
+  }
+
+  function hideLoading(element, content) {
+    element.innerHTML = content;
+  }
+
+  // Add smooth scrolling to navigation links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+
+  // Add entrance animations
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+      }
+    });
+  }, observerOptions);
+
+  // Observe elements for animation
+  document.querySelectorAll('.service-item, .feature, .footer-section').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    observer.observe(el);
   });
 });

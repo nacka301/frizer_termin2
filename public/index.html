@@ -3,67 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Frizerski Salon Novica</title>
+  <title>Frizerski Salon Novica - Profesionalne frizerske usluge</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <header>
-    <h1>Frizerski Salon Novica</h1>
-    <p>Vaš izgled, naša strast</p>
+  <header class="hero-section">
+    <div class="hero-content">
+      <h1><i class="fas fa-cut"></i> Frizerski Salon Novica</h1>
+      <p class="hero-subtitle">Vaš izgled, naša strast</p>
+      <p class="hero-description">Više od 20 godina iskustva u kreaciji savršenog stila</p>
+      <a href="#services" class="cta-button">Pogledaj usluge</a>
+    </div>
+    <div class="hero-bg"></div>
   </header>
 
   <main>
-    <section class="services">
-      <h2>Naše Usluge</h2>
-      <div class="service-grid">
-        <div class="service-item">
-          <h3>Šišanje fade</h3>
-          <p>Trajanje: 15 minuta</p>
-          <p>Cijena: $10.00</p>
-          <a href="/rezervacija?service=Šišanje fade&duration=15 minuta&price=$10.00" class="book-btn">
-            Rezerviraj
-          </a>
-        </div>
-        <div class="service-item">
-          <h3>Šišanje obično</h3>
-          <p>Trajanje: 10 minuta</p>
-          <p>Cijena: $10.00</p>
-          <a href="rezervacija.html?service=Šišanje obično&duration=10 minuta&price=10.00" class="book-btn">
-            Rezerviraj
-          </a>
-        </div>
-        <div class="service-item">
-          <h3>Šišanje žensko</h3>
-          <p>Trajanje: 30 minuta</p>
-          <p>Cijena: $20.00</p>
-          <a href="rezervacija.html?service=Šišanje žensko&duration=30 minuta&price=20.00" class="book-btn">
-            Rezerviraj
-          </a>
-        </div>
-        <div class="service-item">
-          <h3>Šišanje žensko + farbanje</h3>
-          <p>Trajanje: 1 sat</p>
-          <p>Cijena: $40.00</p>
-          <a href="rezervacija.html?service=Šišanje žensko + farbanje&duration=60 minuta&price=40.00" class="book-btn">
-            Rezerviraj
-          </a>
+    <section id="services" class="services">
+      <div class="container">
+        <h2><i class="fas fa-scissors"></i> Naše Usluge</h2>
+        <p class="section-subtitle">Odaberite uslugu koja vam najbolje odgovara</p>
+        <div class="service-grid">
+          <div class="service-item">
+            <div class="service-icon">
+              <i class="fas fa-male"></i>
+            </div>
+            <h3>Šišanje fade</h3>
+            <div class="service-details">
+              <p><i class="far fa-clock"></i> 15 minuta</p>
+              <p class="price"><i class="fas fa-tag"></i> 10.00 €</p>
+            </div>
+            <a href="/rezervacija?service=Šišanje fade&duration=15 minuta&price=10.00" class="book-btn">
+              <i class="fas fa-calendar-plus"></i> Rezerviraj
+            </a>
+          </div>
+          <div class="service-item">
+            <div class="service-icon">
+              <i class="fas fa-user"></i>
+            </div>
+            <h3>Šišanje obično</h3>
+            <div class="service-details">
+              <p><i class="far fa-clock"></i> 10 minuta</p>
+              <p class="price"><i class="fas fa-tag"></i> 10.00 €</p>
+            </div>
+            <a href="rezervacija.html?service=Šišanje obično&duration=10 minuta&price=10.00" class="book-btn">
+              <i class="fas fa-calendar-plus"></i> Rezerviraj
+            </a>
+          </div>
+          <div class="service-item featured">
+            <div class="service-icon">
+              <i class="fas fa-female"></i>
+            </div>
+            <h3>Šišanje žensko</h3>
+            <div class="service-details">
+              <p><i class="far fa-clock"></i> 30 minuta</p>
+              <p class="price"><i class="fas fa-tag"></i> 20.00 €</p>
+            </div>
+            <a href="rezervacija.html?service=Šišanje žensko&duration=30 minuta&price=20.00" class="book-btn">
+              <i class="fas fa-calendar-plus"></i> Rezerviraj
+            </a>
+          </div>
+          <div class="service-item premium">
+            <div class="service-icon">
+              <i class="fas fa-palette"></i>
+            </div>
+            <h3>Šišanje + farbanje</h3>
+            <div class="service-details">
+              <p><i class="far fa-clock"></i> 60 minuta</p>
+              <p class="price"><i class="fas fa-tag"></i> 40.00 €</p>
+            </div>
+            <a href="rezervacija.html?service=Šišanje žensko + farbanje&duration=60 minuta&price=40.00" class="book-btn">
+              <i class="fas fa-calendar-plus"></i> Rezerviraj
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="about">
-      <h2>O Nama</h2>
-      <p>Frizerski Salon Novica pruža vrhunske frizerske usluge već 20 godina. Naš stručni tim frizera posvećen je stvaranju savršenog izgleda za svakog klijenta.</p>
+      <div class="container">
+        <div class="about-content">
+          <div class="about-text">
+            <h2><i class="fas fa-star"></i> O Nama</h2>
+            <p>Frizerski Salon Novica pruža vrhunske frizerske usluge već <strong>20 godina</strong>. Naš stručni tim frizera posvećen je stvaranju savršenog izgleda za svakog klijenta.</p>
+            <div class="features">
+              <div class="feature">
+                <i class="fas fa-award"></i>
+                <span>Certificirani frizeri</span>
+              </div>
+              <div class="feature">
+                <i class="fas fa-heart"></i>
+                <span>Individualni pristup</span>
+              </div>
+              <div class="feature">
+                <i class="fas fa-leaf"></i>
+                <span>Prirodni proizvodi</span>
+              </div>
+            </div>
+          </div>
+          <div class="about-image">
+            <div class="image-placeholder">
+              <i class="fas fa-cut"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
   <footer>
-  <p>Radno vrijeme: Pon-Pet 9-18h, Sub 9-14h</p>
-  <p>Adresa: Ulica Lipe 123, Zagreb</p>
-  <p>Telefon: 01 234 5678</p>
-  <a href="/admin-login" class="admin-link">Admin prijava</a>
-</footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3><i class="far fa-clock"></i> Radno vrijeme</h3>
+          <p>Ponedjeljak - Petak: 9:00 - 18:00</p>
+          <p>Subota: 9:00 - 14:00</p>
+          <p>Nedjelja: Zatvoreno</p>
+        </div>
+        <div class="footer-section">
+          <h3><i class="fas fa-map-marker-alt"></i> Kontakt</h3>
+          <p>Ulica Lipe 123, Zagreb</p>
+          <p><i class="fas fa-phone"></i> 01 234 5678</p>
+          <p><i class="fas fa-envelope"></i> info@salon-novica.hr</p>
+        </div>
+        <div class="footer-section">
+          <h3><i class="fas fa-share-alt"></i> Društvene mreže</h3>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Frizerski Salon Novica. Sva prava zadržana.</p>
+        <a href="/admin-login" class="admin-link">
+          <i class="fas fa-lock"></i> Admin prijava
+        </a>
+      </div>
+    </div>  </footer>
+
+  <!-- Scroll to top button -->
+  <button class="scroll-top" id="scrollTop">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
   <script src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </body>
