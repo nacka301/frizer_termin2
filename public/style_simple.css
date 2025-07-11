@@ -277,40 +277,60 @@ footer {
 }
 
 .modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 2rem;
-    border-radius: 10px;
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 15px;
     width: 90%;
-    max-width: 500px;
+    max-width: 400px;
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.modal-content h2 {
-    color: #27ae60;
-    margin-bottom: 1rem;
+.success-icon {
+    width: 60px;
+    height: 60px;
+    background-color: #27ae60;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
 }
 
-.success-icon {
-    font-size: 3rem;
+.modal-content h2 {
     color: #27ae60;
-    margin-bottom: 1rem;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.modal-content p {
+    margin-bottom: 15px;
+    color: #666;
+}
+
+#modalDetails p {
+    text-align: left;
+    margin-bottom: 10px;
 }
 
 .close-modal {
-    background: #27ae60;
+    background-color: #27ae60;
     color: white;
+    padding: 12px 30px;
     border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
+    border-radius: 25px;
     cursor: pointer;
-    font-weight: bold;
-    margin-top: 1rem;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
 }
 
 .close-modal:hover {
-    background: #229954;
+    background-color: #219a52;
 }
 
 /* Admin Login Styles */

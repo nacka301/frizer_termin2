@@ -1,9 +1,39 @@
-// Jednostavna funkcija za prikaz uspjeha
-function showSuccess(appointment) {
-  const message = `Rezervacija uspješna!\n\nIme: ${appointment.ime} ${appointment.prezime}\nUsluga: ${appointment.service}\nDatum: ${appointment.date}\nVrijeme: ${appointment.time}`;
-  alert(message);
+// Modal funkcije
+function showSuccessModal(appointment) {
+  console.log('Showing success modal for:', appointment);
+  const modal = document.getElementById('successModal');
+  const modalDetails = document.getElementById('modalDetails');
+  
+  // Koristi date i time koje server šalje direktno
+  const formattedDate = appointment.date || 'Nepoznat datum';
+  const formattedTime = appointment.time || 'Nepoznato vrijeme';
+  
+  modalDetails.innerHTML = `
+    <p><strong>Ime:</strong> ${appointment.ime} ${appointment.prezime}</p>
+    <p><strong>Usluga:</strong> ${appointment.service}</p>
+    <p><strong>Datum:</strong> ${formattedDate}</p>
+    <p><strong>Vrijeme:</strong> ${formattedTime}</p>
+  `;
+  
+  modal.style.display = 'block';
+}
+
+function closeModal() {
+  console.log('Closing modal');
+  const modal = document.getElementById('successModal');
+  modal.style.display = 'none';
   // Preusmjeri na početnu stranicu
-  window.location.href = '/';
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 300);
+}
+
+// Zatvori modal klikom izvan njega
+window.onclick = function(event) {
+  const modal = document.getElementById('successModal');
+  if (event.target == modal) {
+    closeModal();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -136,8 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Pokaži jednostavan uspjeh
-        showSuccess(data.appointment);
+        // Pokaži modal sa potvrdom
+        showSuccessModal(data.appointment);
         form.reset();
         availabilityStatus.innerHTML = '';
       } else {
