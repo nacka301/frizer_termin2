@@ -44,11 +44,18 @@ function showSuccessModal(appointment) {
 }
 
 function closeModal() {
+  console.log('Close modal clicked'); // DEBUG
   const modal = document.getElementById('successModal');
   modal.style.display = 'none';
-  setTimeout(() => {
+  // Direktno preusmjeravanje
+  try {
+    console.log('Redirecting to home...'); // DEBUG
     window.location.href = '/';
-  }, 300);
+  } catch (e) {
+    console.log('Fallback redirect...'); // DEBUG
+    // Fallback ako gornje ne radi
+    window.location.replace('/');
+  }
 }
 
 // Zatvori modal klikom izvan njega
