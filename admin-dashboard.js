@@ -11,7 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
         onChange: function(selectedDates, dateStr, instance) {
             if (dateStr) {
                 fetchAppointments(dateStr);
-                selectedDateDiv.innerHTML = `Rezervacije za ${dateStr}`;
+                const date = new Date(dateStr);
+                const formattedDate = date.toLocaleDateString('hr-HR', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+                selectedDateDiv.innerHTML = `Rezervacije za ${formattedDate}`;
             }
         }
     });
@@ -19,7 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Učitaj rezervacije za današnji dan po defaultu
     const today = new Date().toISOString().split('T')[0];
     fetchAppointments(today);
-    selectedDateDiv.innerHTML = `Rezervacije za ${today}`;
+    const todayFormatted = new Date().toLocaleDateString('hr-HR', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+    });
+    selectedDateDiv.innerHTML = `Rezervacije za ${todayFormatted}`;
 
     // Funkcija za dohvaćanje rezervacija s servera
     async function fetchAppointments(date) {
@@ -60,13 +73,15 @@ document.addEventListener('DOMContentLoaded', function() {
         appointments.forEach(appointment => {
             html += `
                 <div class="appointment-card">
-                    <div class="appointment-time">${appointment.time}</div>
-                    <div class="appointment-client">${appointment.ime} ${appointment.prezime}</div>
-                    <div class="appointment-service">${appointment.service} (${appointment.duration} min) - ${appointment.price}€</div>
-                    <div class="appointment-contact">${appointment.mobitel} | ${appointment.email}</div>
                     <button class="delete-btn" onclick="deleteAppointment(${appointment.id})">
                         Obriši
                     </button>
+                    <div class="appointment-time">${appointment.time}</div>
+                    <div class="appointment-client">${appointment.ime} ${appointment.prezime}</div>
+                    <div class="appointment-service">${appointment.service} (${appointment.duration} min) - ${appointment.price}€</div>
+                    <div class="appointment-contact">
+                        📞 ${appointment.mobitel} | ✉️ ${appointment.email}
+                    </div>
                     <div style="clear: both;"></div>
                 </div>
             `;

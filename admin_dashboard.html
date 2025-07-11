@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Frizerski salon</title>
-    <link rel="stylesheet" href="public/style.css">
+    <link rel="stylesheet" href="public/style_simple.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         body {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
@@ -94,103 +94,74 @@
         }
         
         .appointment-card {
-            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-            border: none;
+            background: rgba(255, 255, 255, 0.95);
             padding: 1.5rem;
             margin: 1rem 0;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
             position: relative;
-            overflow: hidden;
+            border-left: 5px solid #667eea;
             transition: all 0.3s ease;
         }
         
-        .appointment-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-        }
-        
         .appointment-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
         
         .appointment-time {
             font-weight: 700;
             color: #2c3e50;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .appointment-time i {
-            color: #667eea;
+            text-align: center;
         }
         
         .appointment-client {
             font-size: 1.2rem;
-            margin: 0.5rem 0;
+            margin: 0.8rem 0;
             font-weight: 600;
             color: #34495e;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .appointment-client i {
-            color: #27ae60;
+            text-align: center;
         }
         
         .appointment-service {
             color: #7f8c8d;
             font-style: italic;
-            font-size: 1.1rem;
-            margin: 0.5rem 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .appointment-service i {
-            color: #f39c12;
+            font-size: 1rem;
+            margin: 0.8rem 0;
+            text-align: center;
         }
         
         .appointment-contact {
             color: #95a5a6;
-            font-size: 0.95rem;
-            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            margin: 0.8rem 0;
+            text-align: center;
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .appointment-contact i {
-            color: #3498db;
+            gap: 1rem;
         }
         
         .delete-btn {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            background: #e74c3c;
             color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 25px;
+            border-radius: 8px;
             cursor: pointer;
-            float: right;
             font-weight: 600;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+            position: absolute;
+            top: 15px;
+            right: 15px;
         }
         
         .delete-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+            background: #c0392b;
+            transform: translateY(-1px);
         }
         
         .no-appointments {
@@ -257,19 +228,19 @@
 <body>
     <div class="admin-container">
         <div class="admin-header">
-            <h1><i class="fas fa-crown"></i>Admin Dashboard</h1>
+            <h1>👑 Admin Dashboard</h1>
             <button class="logout-btn" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Odjavi se
+                🚪 Odjavi se
             </button>
         </div>
         
         <div class="dashboard-section">
-            <h2><i class="fas fa-calendar-alt"></i>Odaberite datum</h2>
+            <h2>📅 Odaberite datum</h2>
             <div id="calendar"></div>
         </div>
         
         <div class="dashboard-section">
-            <h2><i class="fas fa-list"></i>Rezervacije za odabrani dan</h2>
+            <h2>📋 Rezervacije za odabrani dan</h2>
             <div id="selectedDate">Molimo odaberite datum u kalendaru</div>
             <div id="appointments"></div>
         </div>
