@@ -13,9 +13,15 @@ function validateEmail(email) {
 }
 
 function validatePhone(phone) {
-  // Dopušta hrvatske brojeve telefona (pozivni broj +385, 0xx ili 09x format)
-  const phoneRegex = /^(\+385|0)[0-9]{8,9}$/;
-  return phoneRegex.test(phone.replace(/[\s\-]/g, ''));
+  // Podržava međunarodne brojeve telefona u E.164 formatu
+  // Počinje s + i ima 7-15 znamenki (prema ITU-T E.164 standardu)
+  const phoneRegex = /^\+[1-9]\d{6,14}$/;
+  const cleanPhone = phone.replace(/[\s\-()]/g, '');
+  
+  // Također dopušta hrvatske lokalne formate za kompatibilnost
+  const localRegex = /^0[0-9]{8,9}$/;
+  
+  return phoneRegex.test(cleanPhone) || localRegex.test(cleanPhone);
 }
 
 function validateService(service) {

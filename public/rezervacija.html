@@ -6,6 +6,7 @@
   <title>Rezervacija - Frizerski Salon Novica</title>
   <link rel="stylesheet" href="style_simple.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     .reservation-step {
@@ -186,6 +187,50 @@
         font-size: 0.8rem;
       }
     }
+
+    /* Intl-tel-input custom styling */
+    .iti {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+    
+    .iti__input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Poppins', sans-serif;
+      background: white;
+    }
+    
+    .iti__input:focus {
+      border-color: #2196f3;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    }
+    
+    .iti__country-list {
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    
+    .iti__flag-container {
+      padding: 1rem;
+    }
+    
+    .iti__selected-flag {
+      padding: 1rem;
+      border-radius: 8px 0 0 8px;
+    }
+    
+    .iti__arrow {
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid #666;
+    }
   </style>
 </head>
 <body>
@@ -301,6 +346,7 @@
   <script src="cookie-consent.js"></script>
   <script src="offline.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
   <script src="rezervacija.js"></script>
 </body>
 </html>

@@ -68,10 +68,15 @@ function isValidEmail(email) {
 }
 
 function isValidPhoneNumber(phone) {
-  // Ukloni razmake i crtice
+  // Koristi intl-tel-input za validaciju ako je dostupan
+  if (window.phoneInputInstance) {
+    return window.phoneInputInstance.isValidNumber();
+  }
+  
+  // Fallback validacija ako intl-tel-input nije dostupan
   const cleanPhone = phone.replace(/[\s\-]/g, '');
-  // Hrvatski brojevi telefona: +385, 0xx ili 09x format
-  const re = /^(\+385|0)[0-9]{8,9}$/;
+  // Podržava međunarodne formate
+  const re = /^(\+[1-9]\d{1,14})$/;
   return re.test(cleanPhone);
 }
 
@@ -280,6 +285,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Inicijalizacija intl-tel-input za međunarodno validiranje telefona
+  const phoneInput = document.querySelector("#mobitel");
+  const iti = window.intlTelInput(phoneInput, {
+    preferredCountries: ['hr', 'rs', 'ba', 'si', 'de', 'at'],
+    initialCountry: "hr", // Defaultno Hrvatska
+    separateDialCode: true,
+    nationalMode: false,
+    autoHideDialCode: false,
+    autoPlaceholder: "aggressive",
+    placeholderNumberType: "MOBILE",
+    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+  });
+
+  // Spremi referencu na intl-tel-input instancu
+  window.phoneInputInstance = iti;
+
   // Back button handlers
   document.getElementById('back-to-date').addEventListener('click', () => {
     showStep(1);
@@ -295,7 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const ime = document.getElementById('ime').value;
     const prezime = document.getElementById('prezime').value;
-    const mobitel = document.getElementById('mobitel').value;
+    // Uzmi međunarodni format telefona ako je intl-tel-input dostupan
+    const mobitel = window.phoneInputInstance ? 
+      window.phoneInputInstance.getNumber() : 
+      document.getElementById('mobitel').value;
     const email = document.getElementById('email').value;
     const feedback = document.getElementById('feedback');
     const submitBtn = document.getElementById('confirm-booking');
@@ -322,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!isValidPhoneNumber(mobitel)) {
       console.log('Validation failed: Invalid phone:', mobitel);
-      feedback.innerHTML = 'Molimo unesite ispravan broj mobitela (9 ili 10 znamenki).';
+      feedback.innerHTML = 'Molimo unesite ispravan broj telefona.';
       feedback.style.color = '#e74c3c';
       return;
     }
