@@ -92,7 +92,7 @@ function showStep(stepNumber) {
   }
 }
 
-// Generate available time slots
+// Generate available time slots with proper overlap checking
 function generateTimeSlots(date, duration, bookedTimes = []) {
   const slots = [];
   const startHour = 9;
@@ -108,16 +108,42 @@ function generateTimeSlots(date, duration, bookedTimes = []) {
     return [];
   }
   
+  // Convert booked times to time ranges with durations
+  const bookedRanges = bookedTimes.map(bookedTime => {
+    const [hour, minute] = bookedTime.time.split(':').map(Number);
+    const startMinutes = hour * 60 + minute;
+    const endMinutes = startMinutes + bookedTime.duration;
+    return { start: startMinutes, end: endMinutes };
+  });
+  
+  // Debug logging
+  console.log('Booked ranges for date', date, ':', bookedRanges);
+  console.log('New service duration:', slotDuration, 'minutes');
+  
   for (let hour = startHour; hour < actualEndHour; hour++) {
     for (let minute = 0; minute < 60; minute += slotDuration) {
-      if (hour * 60 + minute + slotDuration > actualEndHour * 60) break;
+      const totalMinutes = hour * 60 + minute;
+      
+      // Check if this slot would go beyond working hours
+      if (totalMinutes + slotDuration > actualEndHour * 60) break;
       
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-      const isBooked = bookedTimes.includes(timeString);
+      
+      // Check for overlaps with existing bookings
+      const newSlotStart = totalMinutes;
+      const newSlotEnd = totalMinutes + slotDuration;
+      
+      const hasOverlap = bookedRanges.some(range => {
+        const overlap = (newSlotStart < range.end && newSlotEnd > range.start);
+        if (overlap) {
+          console.log(`Overlap detected: ${timeString} (${newSlotStart}-${newSlotEnd}) overlaps with existing booking (${range.start}-${range.end})`);
+        }
+        return overlap;
+      });
       
       slots.push({
         time: timeString,
-        available: !isBooked
+        available: !hasOverlap
       });
     }
   }

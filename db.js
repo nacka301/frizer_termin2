@@ -175,7 +175,8 @@ async function getBookedTimesForDate(date) {
   try {
     const query = `
       SELECT EXTRACT(HOUR FROM datetime) as hour, 
-             EXTRACT(MINUTE FROM datetime) as minute
+             EXTRACT(MINUTE FROM datetime) as minute,
+             duration
       FROM appointments 
       WHERE DATE(datetime) = $1
       ORDER BY datetime
@@ -183,11 +184,14 @@ async function getBookedTimesForDate(date) {
     
     const result = await client.query(query, [date]);
     
-    // Formatiranje vremena u HH:MM format
+    // Formatiranje vremena u HH:MM format s trajanjem
     const bookedTimes = result.rows.map(row => {
       const hour = String(row.hour).padStart(2, '0');
       const minute = String(row.minute).padStart(2, '0');
-      return `${hour}:${minute}`;
+      return {
+        time: `${hour}:${minute}`,
+        duration: parseInt(row.duration)
+      };
     });
     
     return bookedTimes;
