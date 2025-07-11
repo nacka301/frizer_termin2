@@ -67,7 +67,7 @@ const authLimiter = rateLimit({
 
 const bookingLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 sat
-  max: 3, // maksimalno 3 rezervacije po satu
+  max: 100, // maksimalno 100 rezervacija po satu
   message: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.',
   standardHeaders: true,
   legacyHeaders: false,
