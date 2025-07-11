@@ -7,25 +7,42 @@ function sanitizeString(str) {
   return str.trim().replace(/[<>"\\/]/g, '').substring(0, 100);
 }
 
+function sanitizePhone(phone) {
+  if (typeof phone !== 'string') return '';
+  // Za telefone dopusti +, brojevi, razmaci, crtice, zagrade
+  return phone.trim().replace(/[<>"\\\/]/g, '').substring(0, 20);
+}
+
 function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 100;
 }
 
 function validatePhone(phone) {
-  console.log('DEBUG: Validating phone:', phone);
+  console.log('DEBUG: Validating phone:', phone, 'type:', typeof phone);
+  
+  if (!phone || typeof phone !== 'string') {
+    console.log('DEBUG: Phone is empty or not string');
+    return false;
+  }
   
   // Ukloni sve što nije broj ili +
   const cleanPhone = phone.replace(/[\s\-()\.]/g, '');
   console.log('DEBUG: Cleaned phone:', cleanPhone);
   
-  // E.164 međunarodni format: + i 7-15 znamenki
-  const internationalRegex = /^\+[1-9]\d{6,14}$/;
+  // E.164 međunarodni format: + i 7-15 znamenki (povećano na 16 za sigurnost)
+  const internationalRegex = /^\+[1-9]\d{6,16}$/;
   
   // Hrvatski lokalni format: 0 i 8-9 znamenki
   const localRegex = /^0[1-9]\d{7,8}$/;
   
-  const isValid = internationalRegex.test(cleanPhone) || localRegex.test(cleanPhone);
+  const intlMatch = internationalRegex.test(cleanPhone);
+  const localMatch = localRegex.test(cleanPhone);
+  
+  console.log('DEBUG: International regex test:', intlMatch);
+  console.log('DEBUG: Local regex test:', localMatch);
+  
+  const isValid = intlMatch || localMatch;
   console.log('DEBUG: Phone validation result:', isValid);
   
   return isValid;
@@ -141,7 +158,7 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
   // Input validation
   const sanitizedIme = sanitizeString(ime);
   const sanitizedPrezime = sanitizeString(prezime);
-  const sanitizedMobitel = sanitizeString(mobitel);
+  const sanitizedMobitel = sanitizePhone(mobitel);  // Koristimo sanitizePhone
   const sanitizedService = sanitizeString(service);
 
   console.log('DEBUG: After sanitization:', { sanitizedIme, sanitizedPrezime, sanitizedMobitel, sanitizedService });
