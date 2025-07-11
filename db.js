@@ -73,12 +73,20 @@ function validateDateTime(datetime) {
 }
 
 // Konfiguracija pool-a za povezivanje s bazom podataka
+console.log('DEBUG: Initializing database pool...');
+console.log('DEBUG: DATABASE_URL provided:', !!process.env.DATABASE_URL);
+if (process.env.DATABASE_URL) {
+  console.log('DEBUG: DATABASE_URL starts with:', process.env.DATABASE_URL.substring(0, 20) + '...');
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
   }
 });
+
+console.log('DEBUG: Database pool created');
 
 // Dodajemo error handling za pool
 pool.on('error', (err, client) => {
@@ -198,9 +206,19 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
   }
   
   console.log('DEBUG: All validations passed');
+  console.log('DEBUG: About to connect to database pool...');
+  console.log('DEBUG: Database URL exists:', !!process.env.DATABASE_URL);
+  console.log('DEBUG: Pool object:', pool ? 'exists' : 'null');
 
-  const client = await pool.connect();
-  console.log('DEBUG: Database client connected');
+  let client;
+  try {
+    client = await pool.connect();
+    console.log('DEBUG: Database client connected successfully');
+  } catch (connectError) {
+    console.error('DEBUG: Database connection failed:', connectError.message);
+    console.error('DEBUG: Full connection error:', connectError);
+    throw new Error(`Database connection failed: ${connectError.message}`);
+  }
   try {
     await client.query('BEGIN');
     console.log('DEBUG: Transaction started');
