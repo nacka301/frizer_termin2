@@ -1,6 +1,47 @@
 const { Pool } = require('pg');
 const moment = require('moment');
 
+// Funkcije za sanitizaciju i validaciju input podataka
+function sanitizeString(str) {
+  if (typeof str !== 'string') return '';
+  return str.trim().replace(/[<>"\\/]/g, '').substring(0, 100);
+}
+
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 100;
+}
+
+function validatePhone(phone) {
+  // Dopušta hrvatske brojeve telefona (pozivni broj +385, 0xx ili 09x format)
+  const phoneRegex = /^(\+385|0)[0-9]{8,9}$/;
+  return phoneRegex.test(phone.replace(/[\s\-]/g, ''));
+}
+
+function validateService(service) {
+  const allowedServices = ['Šišanje obično', 'Šišanje fade', 'Pranje i fen', 'Brijanje brade', 'Styling'];
+  return allowedServices.includes(service);
+}
+
+function validateDateTime(datetime) {
+  const parsed = moment(datetime);
+  if (!parsed.isValid()) return false;
+  
+  // Provjeri da li je datum u budućnosti
+  const now = moment();
+  if (parsed.isBefore(now)) return false;
+  
+  // Provjeri da li je u radnom vremenu (9-17h)
+  const hour = parsed.hour();
+  if (hour < 9 || hour >= 17) return false;
+  
+  // Provjeri da li je radni dan (pon-sub)
+  const dayOfWeek = parsed.day();
+  if (dayOfWeek === 0) return false; // nedjelja
+  
+  return true;
+}
+
 // Konfiguracija pool-a za povezivanje s bazom podataka
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -17,6 +58,12 @@ pool.on('error', (err, client) => {
 
 // Funkcija za inicijalizaciju baze podataka
 async function initializeDatabase() {
+  // Skip database initialization in development if no DATABASE_URL
+  if (!process.env.DATABASE_URL && process.env.NODE_ENV !== 'production') {
+    console.log('Development mode: Skipping database initialization');
+    return;
+  }
+  
   const client = await pool.connect();
   try {
     await client.query('SET datestyle = \'ISO, DMY\'');
@@ -74,8 +121,40 @@ async function checkAvailability(date, time) {
   }
 }
 
-// Funkcija za rezervaciju termina
+// Funkcija za rezervaciju termina - s input validation
 async function bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime) {
+  // Input validation
+  const sanitizedIme = sanitizeString(ime);
+  const sanitizedPrezime = sanitizeString(prezime);
+  const sanitizedMobitel = sanitizeString(mobitel);
+  const sanitizedService = sanitizeString(service);
+
+  // Validation checks
+  if (!sanitizedIme || sanitizedIme.length < 2) {
+    throw new Error('Ime mora imati najmanje 2 znakova');
+  }
+  if (!sanitizedPrezime || sanitizedPrezime.length < 2) {
+    throw new Error('Prezime mora imati najmanje 2 znakova');
+  }
+  if (!validateEmail(email)) {
+    throw new Error('Neispravna email adresa');
+  }
+  if (!validatePhone(sanitizedMobitel)) {
+    throw new Error('Neispravan broj telefona');
+  }
+  if (!validateService(sanitizedService)) {
+    throw new Error('Neispravna usluga');
+  }
+  if (!validateDateTime(datetime)) {
+    throw new Error('Neispravan datum i vrijeme');
+  }
+  if (isNaN(duration) || duration < 10 || duration > 120) {
+    throw new Error('Neispravno trajanje usluge');
+  }
+  if (isNaN(price) || price < 5 || price > 100) {
+    throw new Error('Neispravna cijena');
+  }
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -98,15 +177,15 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
     
     const result = await client.query(
       'INSERT INTO appointments (ime, prezime, mobitel, email, service, duration, price, datetime) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-      [ime, prezime, mobitel, email, service, parseInt(duration), parseFloat(price), formattedDatetime]
+      [sanitizedIme, sanitizedPrezime, sanitizedMobitel, email.toLowerCase(), sanitizedService, parseInt(duration), parseFloat(price), formattedDatetime]
     );
     await client.query('COMMIT');
-    console.log('Appointment booked:', result.rows[0]);
+    console.log('Appointment booked:', { id: result.rows[0].id, datetime: formattedDatetime });
     return true;
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error booking appointment:', error);
-    return false;
+    console.error('Error booking appointment:', error.message);
+    throw error;
   } finally {
     client.release();
   }

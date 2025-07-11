@@ -1,24 +1,33 @@
 {
   "name": "frizerke_html",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "init-db": "node -e 'require(\"./db.js\").initializeDatabase()'"
+    "dev": "nodemon server.js",
+    "init-db": "node -e 'require(\"./db.js\").initializeDatabase()'",
+    "build": "echo 'No build step required'"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["frizerski", "salon", "rezervacija", "booking"],
+  "author": "Your Name",
   "license": "ISC",
-  "description": "",
+  "description": "Frizerski salon booking system with advanced security features",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^2.2.0",
     "connect-pg-simple": "^9.0.1",
     "cors": "^2.8.5",
+    "csrf": "^3.1.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
     "express-session": "^1.17.3",
+    "helmet": "^8.1.0",
     "moment": "^2.30.1",
+    "nodemailer": "^7.0.5",
     "pg": "^8.16.3"
   }
 }

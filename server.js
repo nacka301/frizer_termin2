@@ -6,14 +6,78 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const { Pool } = require('pg');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const csrf = require('csrf');
 const db = require('./db');
+const emailService = require('./email');
+const securityLogger = require('./security-logger');
+const healthCheck = require('./health-check');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Initialize CSRF protection
+const csrfProtection = csrf();
+
 // Debug logging
 console.log('Starting server...');
 console.log('Environment:', process.env.NODE_ENV);
+
+// Start periodic health checks
+healthCheck.startPeriodicChecks(5); // Every 5 minutes
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      imgSrc: ["'self'", "data:", "https:"],
+    }
+  }
+}));
+
+// Rate limiting s logiranjem
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuta
+  max: 100, // maksimalno 100 zahtjeva po IP adresi
+  message: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    securityLogger.logRateLimit('general', req.ip, req.get('User-Agent'));
+    res.status(429).json({ error: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.' });
+  }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuta
+  max: 5, // maksimalno 5 login pokušaja
+  message: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    securityLogger.logRateLimit('auth', req.ip, req.get('User-Agent'));
+    res.status(429).json({ error: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.' });
+  }
+});
+
+const bookingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 sat
+  max: 3, // maksimalno 3 rezervacije po satu
+  message: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    securityLogger.logRateLimit('booking', req.ip, req.get('User-Agent'));
+    res.status(429).json({ error: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.' });
+  }
+});
+
+app.use(generalLimiter);
 
 // Session configuration
 const sessionPool = new Pool({
@@ -72,19 +136,34 @@ app.get('/api/check-availability', async (req, res) => {
 });
 
 // Endpoint za rezervaciju termina
-app.post('/api/book', async (req, res) => {
+app.post('/api/book', bookingLimiter, async (req, res) => {
   const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
   if (!ime || !prezime || !mobitel || !email || !service || !duration || !price || !datetime) {
+    securityLogger.logBooking(false, { reason: 'Missing required fields' }, req.ip, req.get('User-Agent'));
     return res.status(400).json({ error: 'Svi podaci su obavezni.' });
   }
   try {
     const booked = await db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
     if (booked) {
+      // Log successful booking
+      securityLogger.logBooking(true, { ime, prezime, service, datetime }, req.ip, req.get('User-Agent'));
+      
+      // Send email notifications
+      const appointmentDetails = { ime, prezime, service, datetime, price };
+      
+      // Send confirmation to customer
+      emailService.sendBookingConfirmation(email, appointmentDetails)
+        .catch(err => console.error('Failed to send customer email:', err));
+      
+      // Send notification to admin
+      emailService.sendAdminNotification({ ...appointmentDetails, mobitel, email })
+        .catch(err => console.error('Failed to send admin email:', err));
+      
       // Parsiranje datetime-a za lepši prikaz u modalu
       const [datePart, timePart] = datetime.split('T');
       res.json({ 
         success: true, 
-        message: 'Termin uspješno rezerviran!', 
+        message: 'Termin uspješno rezerviran! Potvrda je poslana na vašu email adresu.', 
         appointment: { 
           ime, 
           prezime, 
@@ -95,6 +174,7 @@ app.post('/api/book', async (req, res) => {
         } 
       });
     } else {
+      securityLogger.logBooking(false, { reason: 'Slot no longer available' }, req.ip, req.get('User-Agent'));
       res.status(409).json({ error: 'Termin više nije dostupan.' });
     }
   } catch (error) {
@@ -137,7 +217,7 @@ app.get('/api/available-times', async (req, res) => {
 });
 
 // Admin login endpoint
-app.post('/api/admin-login', async (req, res) => {
+app.post('/api/admin-login', authLimiter, async (req, res) => {
   console.log('Admin login attempt:', req.body);
   const { username, password } = req.body;
 
@@ -150,13 +230,25 @@ app.post('/api/admin-login', async (req, res) => {
       req.session.isAdmin = true;
       req.session.username = username;
       console.log('Admin login successful');
+      
+      // Log successful login
+      securityLogger.logLogin(true, username, req.ip, req.get('User-Agent'));
+      
       res.json({ success: true, message: 'Login successful' });
     } else {
       console.log('Admin login failed');
+      
+      // Log failed login
+      securityLogger.logLogin(false, username, req.ip, req.get('User-Agent'));
+      
       res.status(401).json({ error: 'Neispravno korisničko ime ili lozinka' });
     }
   } catch (error) {
     console.error('Error during admin login:', error);
+    
+    // Log error
+    securityLogger.logError(error, 'admin-login', req.ip, req.get('User-Agent'));
+    
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -228,13 +320,41 @@ app.get('/admin-dashboard', (req, res) => {
 });
 
 // Root route
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    const healthStatus = await healthCheck.performHealthCheck();
+    const statusCode = healthStatus.status === 'healthy' ? 200 : 503;
+    res.status(statusCode).json(healthStatus);
+  } catch (error) {
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
+});
+
+// Security analytics endpoint (admin only)
+app.get('/api/security-analytics', requireAuth, async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+    const analytics = await securityLogger.analyzeSecurityLogs(days);
+    res.json(analytics);
+  } catch (error) {
+    securityLogger.logError(error, 'security-analytics', req.ip, req.get('User-Agent'));
+    res.status(500).json({ error: 'Failed to generate security analytics' });
+  }
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Općeniti error handler
+// Općeniti error handler s logiranjem
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  securityLogger.logError(err, 'general-error', req.ip, req.get('User-Agent'));
   res.status(500).send('Nešto je pošlo po zlu!');
 });
 

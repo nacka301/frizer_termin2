@@ -304,9 +304,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      // Show loading
+      loading.show('Rezerviram termin...');
+      loading.showButtonLoading(submitBtn, 'Rezerviraj');
+      
       feedback.innerHTML = 'Rezerviram...';
       feedback.style.color = '#666';
-      submitBtn.disabled = true;
 
       const response = await fetch('/api/book', {
         method: 'POST',
@@ -327,6 +330,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await response.json();
 
+      // Hide loading
+      loading.hide();
+      loading.hideButtonLoading(submitBtn, 'Rezerviraj');
+
       if (response.ok) {
         showSuccessModal(data.appointment);
       } else {
@@ -342,10 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       console.error(err);
+      loading.hide();
+      loading.hideButtonLoading(submitBtn, 'Rezerviraj');
       feedback.innerHTML = 'Greška pri povezivanju sa serverom.';
       feedback.style.color = '#e74c3c';
     } finally {
-      submitBtn.disabled = false;
       if (feedback.innerHTML === 'Rezerviram...') {
         feedback.innerHTML = '';
       }
