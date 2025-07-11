@@ -114,7 +114,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Middleware to check if user is authenticated
 function requireAuth(req, res, next) {
@@ -356,15 +356,15 @@ app.get('/api/debug/appointments', async (req, res) => {
 
 // Rute za serviranje HTML stranica
 app.get('/rezervacija', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'rezervacija.html'));
+  res.sendFile(path.join(__dirname, 'frontend', 'rezervacija.html'));
 });
 
 app.get('/admin-login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin-login.html'));
+  res.sendFile(path.join(__dirname, 'frontend', 'admin-login.html'));
 });
 
 app.get('/admin-dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin_dashboard.html'));
+  res.sendFile(path.join(__dirname, 'frontend', 'admin_dashboard.html'));
 });
 
 // Root route
@@ -396,7 +396,7 @@ app.get('/api/security-analytics', requireAuth, async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
 // Općeniti error handler s logiranjem
