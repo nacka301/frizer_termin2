@@ -9,10 +9,10 @@ const { Pool } = require('pg');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const csrf = require('csrf');
-const db = require('./db');
-const emailService = require('./email');
-const securityLogger = require('./security-logger');
-const healthCheck = require('./health-check');
+const db = require('./database/db');
+const emailService = require('./services/email');
+const securityLogger = require('./services/security-logger');
+const healthCheck = require('./services/health-check');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -113,8 +113,32 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, '..', 'client')));
+
+// Serve HTML pages
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'pages', 'index.html'));
+});
+
+app.get('/rezervacija.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'pages', 'rezervacija.html'));
+});
+
+app.get('/privacy-policy.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'pages', 'privacy-policy.html'));
+});
+
+app.get('/terms-of-service.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'pages', 'terms-of-service.html'));
+});
+
+app.get('/admin-login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'admin', 'admin-login.html'));
+});
+
+app.get('/admin_dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'admin', 'admin_dashboard.html'));
+});
 
 // Middleware to check if user is authenticated
 function requireAuth(req, res, next) {
