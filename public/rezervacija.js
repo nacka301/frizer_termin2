@@ -68,8 +68,11 @@ function isValidEmail(email) {
 }
 
 function isValidPhoneNumber(phone) {
-  const re = /^[0-9]{9,10}$/;
-  return re.test(phone);
+  // Ukloni razmake i crtice
+  const cleanPhone = phone.replace(/[\s\-]/g, '');
+  // Hrvatski brojevi telefona: +385, 0xx ili 09x format
+  const re = /^(\+385|0)[0-9]{8,9}$/;
+  return re.test(cleanPhone);
 }
 
 // Step navigation functions
@@ -229,6 +232,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('URL params:', { selectedService, serviceDuration, servicePrice });
 
+  // Provjeri da li su svi parametri prisutni i valjani
+  if (!selectedService || isNaN(serviceDuration) || isNaN(servicePrice)) {
+    console.error('Invalid URL parameters!', { selectedService, serviceDuration, servicePrice });
+    document.getElementById('selected-service').innerHTML = 
+      '<strong style="color: red;">Greška: Neispravni podaci o usluzi. Molimo vratite se i odaberite uslugu.</strong>';
+    return;
+  }
+
   // Prikaži odabranu uslugu
   if (selectedService) {
     document.getElementById('selected-service').innerHTML = 
@@ -289,24 +300,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedback = document.getElementById('feedback');
     const submitBtn = document.getElementById('confirm-booking');
 
+    console.log('Form validation started');
+    console.log('Form data:', { ime, prezime, mobitel, email });
+    console.log('Selected service data:', { selectedService, serviceDuration, servicePrice });
+    console.log('Selected date/time:', { selectedDate, selectedTime });
+
     // Validation
     if (!ime || !prezime || !mobitel || !email) {
+      console.log('Validation failed: Missing fields');
       feedback.innerHTML = 'Molimo popunite sva polja.';
       feedback.style.color = '#e74c3c';
       return;
     }
 
     if (!isValidEmail(email)) {
+      console.log('Validation failed: Invalid email:', email);
       feedback.innerHTML = 'Molimo unesite ispravnu email adresu.';
       feedback.style.color = '#e74c3c';
       return;
     }
 
     if (!isValidPhoneNumber(mobitel)) {
+      console.log('Validation failed: Invalid phone:', mobitel);
       feedback.innerHTML = 'Molimo unesite ispravan broj mobitela (9 ili 10 znamenki).';
       feedback.style.color = '#e74c3c';
       return;
     }
+
+    console.log('All frontend validations passed');
 
     try {
       // Show loading
@@ -344,15 +365,18 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+      console.log('Response data:', data);
 
       // Hide loading
       loading.hide();
       loading.hideButtonLoading(submitBtn, 'Rezerviraj');
 
       if (response.ok) {
+        console.log('Booking successful!');
         showSuccessModal(data.appointment);
       } else {
+        console.log('Booking failed with status:', response.status, 'data:', data);
         // Provjeri je li problem s dostupnošću termina
         if (response.status === 409 && data.error && data.error.includes('više nije dostupan')) {
           // Termin je u međuvremenu rezerviran
@@ -364,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error('Booking request failed:', err);
       loading.hide();
       loading.hideButtonLoading(submitBtn, 'Rezerviraj');
       feedback.innerHTML = 'Greška pri povezivanju sa serverom.';
