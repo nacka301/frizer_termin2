@@ -29,6 +29,10 @@ function validatePhone(phone) {
   // Ukloni sve što nije broj ili +
   const cleanPhone = phone.replace(/[\s\-()\.]/g, '');
   console.log('DEBUG: Cleaned phone:', cleanPhone);
+  console.log('DEBUG: Cleaned phone length:', cleanPhone.length);
+  console.log('DEBUG: First char after +:', cleanPhone.charAt(1));
+  console.log('DEBUG: Digits after +:', cleanPhone.substring(1));
+  console.log('DEBUG: Digits count after +:', cleanPhone.substring(1).length);
   
   // E.164 međunarodni format: + i 7-15 znamenki (povećano na 16 za sigurnost)
   const internationalRegex = /^\+[1-9]\d{6,16}$/;
@@ -41,6 +45,9 @@ function validatePhone(phone) {
   
   console.log('DEBUG: International regex test:', intlMatch);
   console.log('DEBUG: Local regex test:', localMatch);
+  console.log('DEBUG: Testing specific patterns:');
+  console.log('DEBUG: Starts with +?', cleanPhone.startsWith('+'));
+  console.log('DEBUG: Has only digits after +?', /^\+\d+$/.test(cleanPhone));
   
   const isValid = intlMatch || localMatch;
   console.log('DEBUG: Phone validation result:', isValid);
