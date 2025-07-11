@@ -44,18 +44,10 @@ function showSuccessModal(appointment) {
 }
 
 function closeModal() {
-  console.log('Close modal clicked'); // DEBUG
   const modal = document.getElementById('successModal');
   modal.style.display = 'none';
-  // Direktno preusmjeravanje
-  try {
-    console.log('Redirecting to home...'); // DEBUG
-    window.location.href = '/';
-  } catch (e) {
-    console.log('Fallback redirect...'); // DEBUG
-    // Fallback ako gornje ne radi
-    window.location.replace('/');
-  }
+  // Direktno preusmjeravanje na početnu stranicu
+  window.location.href = '/';
 }
 
 // Zatvori modal klikom izvan njega
@@ -65,6 +57,9 @@ window.onclick = function(event) {
     closeModal();
   }
 }
+
+// Close modal button handler
+document.getElementById('closeModalBtn').addEventListener('click', closeModal);
 
 // Validation funkcije
 function isValidEmail(email) {

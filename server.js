@@ -41,43 +41,44 @@ app.use(helmet({
 }));
 
 // Rate limiting s logiranjem
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minuta
-  max: 100, // maksimalno 100 zahtjeva po IP adresi
-  message: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    securityLogger.logRateLimit('general', req.ip, req.get('User-Agent'));
-    res.status(429).json({ error: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.' });
-  }
-});
+// Rate limiting DISABLED za testiranje
+// const generalLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minuta
+//   max: 100, // maksimalno 100 zahtjeva po IP adresi
+//   message: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.',
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   handler: (req, res) => {
+//     securityLogger.logRateLimit('general', req.ip, req.get('User-Agent'));
+//     res.status(429).json({ error: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.' });
+//   }
+// });
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minuta
-  max: 5, // maksimalno 5 login pokušaja
-  message: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    securityLogger.logRateLimit('auth', req.ip, req.get('User-Agent'));
-    res.status(429).json({ error: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.' });
-  }
-});
+// const authLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minuta
+//   max: 5, // maksimalno 5 login pokušaja
+//   message: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.',
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   handler: (req, res) => {
+//     securityLogger.logRateLimit('auth', req.ip, req.get('User-Agent'));
+//     res.status(429).json({ error: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.' });
+//   }
+// });
 
-const bookingLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 sat
-  max: 100, // maksimalno 100 rezervacija po satu
-  message: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    securityLogger.logRateLimit('booking', req.ip, req.get('User-Agent'));
-    res.status(429).json({ error: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.' });
-  }
-});
+// const bookingLimiter = rateLimit({
+//   windowMs: 60 * 60 * 1000, // 1 sat
+//   max: 100, // maksimalno 100 rezervacija po satu
+//   message: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.',
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   handler: (req, res) => {
+//     securityLogger.logRateLimit('booking', req.ip, req.get('User-Agent'));
+//     res.status(429).json({ error: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.' });
+//   }
+// });
 
-app.use(generalLimiter);
+// app.use(generalLimiter); // DISABLED
 
 // Session configuration
 const sessionPool = new Pool({
@@ -136,7 +137,7 @@ app.get('/api/check-availability', async (req, res) => {
 });
 
 // Endpoint za rezervaciju termina
-app.post('/api/book', bookingLimiter, async (req, res) => {
+app.post('/api/book', async (req, res) => {
   const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
   if (!ime || !prezime || !mobitel || !email || !service || !duration || !price || !datetime) {
     securityLogger.logBooking(false, { reason: 'Missing required fields' }, req.ip, req.get('User-Agent'));
@@ -217,7 +218,7 @@ app.get('/api/available-times', async (req, res) => {
 });
 
 // Admin login endpoint
-app.post('/api/admin-login', authLimiter, async (req, res) => {
+app.post('/api/admin-login', async (req, res) => {
   console.log('Admin login attempt:', req.body);
   const { username, password } = req.body;
 
