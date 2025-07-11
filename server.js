@@ -150,6 +150,7 @@ app.post('/api/book', async (req, res) => {
     const booked = await db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
     console.log('bookAppointment result:', booked); // DEBUG
     if (booked) {
+      console.log('DEBUG: Booking successful, sending emails...'); // DEBUG
       // Log successful booking
       securityLogger.logBooking(true, { ime, prezime, service, datetime }, req.ip, req.get('User-Agent'));
       
@@ -157,11 +158,15 @@ app.post('/api/book', async (req, res) => {
       const appointmentDetails = { ime, prezime, service, datetime, price };
       
       // Send confirmation to customer
+      console.log('DEBUG: Sending customer email to:', email); // DEBUG
       emailService.sendBookingConfirmation(email, appointmentDetails)
+        .then(success => console.log('DEBUG: Customer email sent:', success))
         .catch(err => console.error('Failed to send customer email:', err));
       
       // Send notification to admin
+      console.log('DEBUG: Sending admin email...'); // DEBUG
       emailService.sendAdminNotification({ ...appointmentDetails, mobitel, email })
+        .then(success => console.log('DEBUG: Admin email sent:', success))
         .catch(err => console.error('Failed to send admin email:', err));
       
       // Parsiranje datetime-a za lepši prikaz u modalu
@@ -310,6 +315,20 @@ app.delete('/api/admin/appointments/:id', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Error deleting appointment:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Debug endpoint za provjeru postojanja rezervacija
+app.get('/api/debug/appointments', async (req, res) => {
+  try {
+    const appointments = await db.getAllAppointments();
+    res.json({ 
+      count: appointments.length,
+      appointments: appointments.slice(-5) // Prikaži zadnjih 5
+    });
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
