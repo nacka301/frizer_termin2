@@ -146,9 +146,20 @@ app.post('/api/book', async (req, res) => {
     return res.status(400).json({ error: 'Svi podaci su obavezni.' });
   }
   try {
-    console.log('Calling db.bookAppointment...'); // DEBUG
-    const booked = await db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
-    console.log('bookAppointment result:', booked); // DEBUG
+    console.log('DEBUG: Before calling db.bookAppointment...'); // DEBUG
+    console.log('DEBUG: Parameters:', { ime, prezime, mobitel, email, service, duration, price, datetime }); // DEBUG
+    
+    let booked;
+    try {
+      booked = await db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
+      console.log('DEBUG: db.bookAppointment completed successfully, result:', booked); // DEBUG
+    } catch (dbError) {
+      console.error('DEBUG: db.bookAppointment failed with error:', dbError); // DEBUG
+      console.error('DEBUG: DB Error message:', dbError.message); // DEBUG
+      console.error('DEBUG: DB Error stack:', dbError.stack); // DEBUG
+      throw dbError; // Re-throw to be caught by outer catch
+    }
+    
     if (booked) {
       console.log('DEBUG: Booking successful, sending emails...'); // DEBUG
       // Log successful booking
@@ -189,9 +200,20 @@ app.post('/api/book', async (req, res) => {
       res.status(409).json({ error: 'Termin više nije dostupan.' });
     }
   } catch (error) {
-    console.error('Error booking appointment:', error); // ENHANCED DEBUG
-    console.error('Error stack:', error.stack); // ENHANCED DEBUG
-    res.status(500).json({ error: 'Greška pri rezervaciji termina.' });
+    console.error('DEBUG: Main catch block triggered'); // DEBUG
+    console.error('DEBUG: Error booking appointment:', error); // ENHANCED DEBUG
+    console.error('DEBUG: Error message:', error.message); // ENHANCED DEBUG
+    console.error('DEBUG: Error stack:', error.stack); // ENHANCED DEBUG
+    
+    // For debugging, include error details in response (remove in production)
+    res.status(500).json({ 
+      error: 'Greška pri rezervaciji termina.',
+      debug: {
+        message: error.message,
+        name: error.name,
+        code: error.code || 'UNKNOWN'
+      }
+    });
   }
 });
 
