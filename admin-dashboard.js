@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         appointments.forEach(appointment => {
             html += `
                 <div class="appointment-card">
-                    <button class="delete-btn" onclick="deleteAppointment(${appointment.id})">
+                    <button class="delete-btn" data-appointment-id="${appointment.id}">
                         Obriši
                     </button>
                     <div class="appointment-time">${appointment.time}</div>
@@ -98,10 +98,19 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         });
         appointmentsDiv.innerHTML = html;
+        
+        // Dodaj event listenere za delete buttone
+        const deleteButtons = appointmentsDiv.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-appointment-id');
+                deleteAppointment(appointmentId);
+            });
+        });
     }
 
-    // Globalna funkcija za brisanje rezervacije
-    window.deleteAppointment = async function(appointmentId) {
+    // Funkcija za brisanje rezervacije
+    async function deleteAppointment(appointmentId) {
         if (confirm('Jeste li sigurni da želite obrisati ovu rezervaciju?')) {
             try {
                 const response = await fetch(`/api/admin/appointments/${appointmentId}`, {
@@ -133,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Greška pri brisanju rezervacije. Molimo pokušajte ponovo.');
             }
         }
-    };
+    }
 });
 
 // Funkcija za odjavu
