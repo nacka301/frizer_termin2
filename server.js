@@ -384,6 +384,96 @@ app.use((err, req, res, next) => {
   res.status(500).send('Nešto je pošlo po zlu!');
 });
 
+// Debug endpoint za testiranje phone validacije
+app.post('/api/debug/phone', async (req, res) => {
+  const { phone } = req.body;
+  console.log('DEBUG PHONE TEST - Input:', phone);
+  
+  try {
+    const db = require('./db');
+    
+    // Test sanitizePhone
+    const sanitized = phone ? phone.trim().replace(/[<>"\\\/]/g, '').substring(0, 20) : '';
+    console.log('DEBUG PHONE TEST - Sanitized:', sanitized);
+    
+    // Test regex patterns
+    const internationalRegex = /^\+[1-9]\d{6,16}$/;
+    const localRegex = /^0[1-9]\d{7,8}$/;
+    const cleanPhone = sanitized.replace(/[\s\-()\.]/g, '');
+    
+    console.log('DEBUG PHONE TEST - Cleaned:', cleanPhone);
+    console.log('DEBUG PHONE TEST - International match:', internationalRegex.test(cleanPhone));
+    console.log('DEBUG PHONE TEST - Local match:', localRegex.test(cleanPhone));
+    
+    res.json({
+      input: phone,
+      sanitized: sanitized,
+      cleaned: cleanPhone,
+      internationalMatch: internationalRegex.test(cleanPhone),
+      localMatch: localRegex.test(cleanPhone),
+      isValid: internationalRegex.test(cleanPhone) || localRegex.test(cleanPhone)
+    });
+  } catch (error) {
+    console.error('DEBUG PHONE TEST - Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Debug endpoint za testiranje bookAppointment parametara
+app.post('/api/debug/booking', async (req, res) => {
+  const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
+  
+  console.log('DEBUG BOOKING TEST - All params:', { ime, prezime, mobitel, email, service, duration, price, datetime });
+  
+  try {
+    // Test svaki korak validacije
+    const db = require('./db');
+    
+    // Test sanitization
+    const sanitizedIme = ime ? ime.trim().replace(/[<>"\\/]/g, '').substring(0, 100) : '';
+    const sanitizedPrezime = prezime ? prezime.trim().replace(/[<>"\\/]/g, '').substring(0, 100) : '';
+    const sanitizedMobitel = mobitel ? mobitel.trim().replace(/[<>"\\\/]/g, '').substring(0, 20) : '';
+    const sanitizedService = service ? service.trim().replace(/[<>"\\/]/g, '').substring(0, 100) : '';
+    
+    console.log('DEBUG BOOKING TEST - After sanitization:', { sanitizedIme, sanitizedPrezime, sanitizedMobitel, sanitizedService });
+    
+    // Test individual validations
+    const validations = {
+      imeValid: sanitizedIme && sanitizedIme.length >= 2,
+      prezimeValid: sanitizedPrezime && sanitizedPrezime.length >= 2,
+      emailValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 100,
+      serviceValid: ['Šišanje obično', 'Šišanje fade', 'Pranje i fen', 'Brijanje brade', 'Styling'].includes(sanitizedService),
+      durationValid: !isNaN(duration) && duration >= 10 && duration <= 120,
+      priceValid: !isNaN(price) && price >= 5 && price <= 100
+    };
+    
+    // Test phone validation
+    const cleanPhone = sanitizedMobitel.replace(/[\s\-()\.]/g, '');
+    const internationalRegex = /^\+[1-9]\d{6,16}$/;
+    const localRegex = /^0[1-9]\d{7,8}$/;
+    validations.phoneValid = internationalRegex.test(cleanPhone) || localRegex.test(cleanPhone);
+    
+    // Test datetime validation
+    const moment = require('moment');
+    const parsed = moment(datetime);
+    validations.datetimeValid = parsed.isValid() && parsed.isAfter(moment()) && 
+      parsed.hour() >= 9 && parsed.hour() < 17 && parsed.day() !== 0;
+    
+    console.log('DEBUG BOOKING TEST - Validations:', validations);
+    
+    res.json({
+      params: { ime, prezime, mobitel, email, service, duration, price, datetime },
+      sanitized: { sanitizedIme, sanitizedPrezime, sanitizedMobitel, sanitizedService },
+      validations: validations,
+      allValid: Object.values(validations).every(v => v === true)
+    });
+    
+  } catch (error) {
+    console.error('DEBUG BOOKING TEST - Error:', error);
+    res.status(500).json({ error: error.message, stack: error.stack });
+  }
+});
+
 // Pokreni server
 app.listen(PORT, () => {
   console.log(`Server je pokrenut na portu ${PORT}`);
