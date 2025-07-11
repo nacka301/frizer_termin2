@@ -208,15 +208,23 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
   console.log('DEBUG: All validations passed');
   console.log('DEBUG: About to connect to database pool...');
   console.log('DEBUG: Database URL exists:', !!process.env.DATABASE_URL);
+  console.log('DEBUG: Database URL (first 50 chars):', process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + '...' : 'NOT SET');
   console.log('DEBUG: Pool object:', pool ? 'exists' : 'null');
+  console.log('DEBUG: Pool totalCount:', pool?.totalCount);
+  console.log('DEBUG: Pool idleCount:', pool?.idleCount);
+  console.log('DEBUG: Pool waitingCount:', pool?.waitingCount);
 
   let client;
   try {
+    console.log('DEBUG: Calling pool.connect()...');
     client = await pool.connect();
     console.log('DEBUG: Database client connected successfully');
+    console.log('DEBUG: Client database name:', client.database);
   } catch (connectError) {
     console.error('DEBUG: Database connection failed:', connectError.message);
-    console.error('DEBUG: Full connection error:', connectError);
+    console.error('DEBUG: Connection error code:', connectError.code);
+    console.error('DEBUG: Connection error stack:', connectError.stack);
+    console.error('DEBUG: Full connection error object:', JSON.stringify(connectError, null, 2));
     throw new Error(`Database connection failed: ${connectError.message}`);
   }
   try {
