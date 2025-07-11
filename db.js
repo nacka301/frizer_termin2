@@ -56,7 +56,15 @@ function validatePhone(phone) {
 }
 
 function validateService(service) {
-  const allowedServices = ['Šišanje obično', 'Šišanje fade', 'Pranje i fen', 'Brijanje brade', 'Styling'];
+  const allowedServices = [
+    'Šišanje obično', 
+    'Šišanje fade', 
+    'Šišanje žensko',
+    'Šišanje žensko farbanje',
+    'Pranje i fen', 
+    'Brijanje brade', 
+    'Styling'
+  ];
   return allowedServices.includes(service);
 }
 
