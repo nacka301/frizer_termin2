@@ -13,15 +13,22 @@ function validateEmail(email) {
 }
 
 function validatePhone(phone) {
-  // Podržava međunarodne brojeve telefona u E.164 formatu
-  // Počinje s + i ima 7-15 znamenki (prema ITU-T E.164 standardu)
-  const phoneRegex = /^\+[1-9]\d{6,14}$/;
-  const cleanPhone = phone.replace(/[\s\-()]/g, '');
+  console.log('DEBUG: Validating phone:', phone);
   
-  // Također dopušta hrvatske lokalne formate za kompatibilnost
-  const localRegex = /^0[0-9]{8,9}$/;
+  // Ukloni sve što nije broj ili +
+  const cleanPhone = phone.replace(/[\s\-()\.]/g, '');
+  console.log('DEBUG: Cleaned phone:', cleanPhone);
   
-  return phoneRegex.test(cleanPhone) || localRegex.test(cleanPhone);
+  // E.164 međunarodni format: + i 7-15 znamenki
+  const internationalRegex = /^\+[1-9]\d{6,14}$/;
+  
+  // Hrvatski lokalni format: 0 i 8-9 znamenki
+  const localRegex = /^0[1-9]\d{7,8}$/;
+  
+  const isValid = internationalRegex.test(cleanPhone) || localRegex.test(cleanPhone);
+  console.log('DEBUG: Phone validation result:', isValid);
+  
+  return isValid;
 }
 
 function validateService(service) {

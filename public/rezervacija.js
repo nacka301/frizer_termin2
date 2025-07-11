@@ -295,7 +295,27 @@ document.addEventListener('DOMContentLoaded', () => {
     autoHideDialCode: false,
     autoPlaceholder: "aggressive",
     placeholderNumberType: "MOBILE",
+    formatOnDisplay: true, // Auto-formatiranje
     utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+  });
+
+  // Auto-formatiranje dok korisnik tipka
+  phoneInput.addEventListener('input', function() {
+    // Ukloni sva formatiranja i ostavi samo brojevi
+    let value = phoneInput.value.replace(/[^\d]/g, '');
+    
+    // Hrvatski format za lakše tipkanje
+    if (iti.getSelectedCountryData().iso2 === 'hr') {
+      if (value.length <= 2) {
+        phoneInput.value = value;
+      } else if (value.length <= 5) {
+        phoneInput.value = value.slice(0, 2) + ' ' + value.slice(2);
+      } else if (value.length <= 8) {
+        phoneInput.value = value.slice(0, 2) + ' ' + value.slice(2, 5) + ' ' + value.slice(5);
+      } else {
+        phoneInput.value = value.slice(0, 2) + ' ' + value.slice(2, 5) + ' ' + value.slice(5, 8) + ' ' + value.slice(8, 11);
+      }
+    }
   });
 
   // Spremi referencu na intl-tel-input instancu

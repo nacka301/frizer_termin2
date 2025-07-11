@@ -192,16 +192,18 @@
     .iti {
       width: 100%;
       margin-bottom: 1rem;
+      position: relative;
     }
     
     .iti__input {
       width: 100%;
-      padding: 1rem;
+      padding: 1rem 1rem 1rem 4rem; /* Left padding for flag */
       border: 2px solid #e9ecef;
       border-radius: 8px;
       font-size: 1rem;
       font-family: 'Poppins', sans-serif;
       background: white;
+      box-sizing: border-box;
     }
     
     .iti__input:focus {
@@ -215,21 +217,34 @@
       border: 1px solid #e9ecef;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       z-index: 1000;
+      max-height: 200px;
+      overflow-y: auto;
     }
     
     .iti__flag-container {
-      padding: 1rem;
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      padding: 0;
     }
     
     .iti__selected-flag {
       padding: 1rem;
       border-radius: 8px 0 0 8px;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      background: white;
+      border-right: 1px solid #e9ecef;
     }
     
     .iti__arrow {
       border-left: 4px solid transparent;
       border-right: 4px solid transparent;
       border-top: 4px solid #666;
+      margin-left: 6px;
     }
   </style>
 </head>
