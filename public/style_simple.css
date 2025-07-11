@@ -569,3 +569,17 @@ footer {
         padding: 2rem 1rem;
     }
 }
+
+/* Error handling styles */
+.error-link {
+    color: #e74c3c;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.error-link:hover {
+    color: #c0392b;
+    text-decoration: none;
+}

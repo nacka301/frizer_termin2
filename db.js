@@ -57,7 +57,15 @@ async function initializeDatabase() {
 // Funkcija za provjeru dostupnosti termina
 async function checkAvailability(date, time) {
   try {
-    const formattedDatetime = moment(`${date} ${time}`, "DD.MM.YYYY HH:mm").format("YYYY-MM-DD HH:mm:ss");
+    // Podržava i Y-m-d i DD.MM.YYYY format
+    let formattedDatetime;
+    if (date.includes('-') && date.length === 10) {
+      // Y-m-d format (2024-01-15)
+      formattedDatetime = moment(`${date} ${time}`, "YYYY-MM-DD HH:mm").format("YYYY-MM-DD HH:mm:ss");
+    } else {
+      // DD.MM.YYYY format (15.01.2024)
+      formattedDatetime = moment(`${date} ${time}`, "DD.MM.YYYY HH:mm").format("YYYY-MM-DD HH:mm:ss");
+    }
     const result = await pool.query('SELECT COUNT(*) as count FROM appointments WHERE datetime = $1', [formattedDatetime]);
     return parseInt(result.rows[0].count) === 0;
   } catch (error) {
@@ -77,7 +85,17 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
       await client.query('ROLLBACK');
       return false;
     }
-    const formattedDatetime = moment(datetime, "DD.MM.YYYYTHH:mm").format("YYYY-MM-DD HH:mm:ss");
+    
+    // Podržava i Y-m-d i DD.MM.YYYY format
+    let formattedDatetime;
+    if (date.includes('-') && date.length === 10) {
+      // Y-m-d format (2024-01-15)
+      formattedDatetime = moment(datetime, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
+    } else {
+      // DD.MM.YYYY format (15.01.2024)
+      formattedDatetime = moment(datetime, "DD.MM.YYYYTHH:mm").format("YYYY-MM-DD HH:mm:ss");
+    }
+    
     const result = await client.query(
       'INSERT INTO appointments (ime, prezime, mobitel, email, service, duration, price, datetime) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       [ime, prezime, mobitel, email, service, parseInt(duration), parseFloat(price), formattedDatetime]

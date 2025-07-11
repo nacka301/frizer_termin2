@@ -5,6 +5,29 @@ let selectedService = null;
 let serviceDuration = null;
 let servicePrice = null;
 
+// Funkcija za refresh termina i povratak na korak 2
+function refreshAndGoBack() {
+  // Resetiraj odabrani termin
+  selectedTime = null;
+  
+  // Ukloni selekciju s termina
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  
+  // Osvježi dostupne termine
+  if (selectedDate) {
+    loadAvailableTimes(selectedDate);
+  }
+  
+  // Vrati na korak 2
+  showStep(2);
+  
+  // Obriši poruku greške
+  const feedback = document.getElementById('reservation-feedback');
+  if (feedback) {
+    feedback.innerHTML = '';
+  }
+}
+
 // Modal funkcije
 function showSuccessModal(appointment) {
   const modal = document.getElementById('successModal');
@@ -270,8 +293,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (response.ok) {
         showSuccessModal(data.appointment);
       } else {
-        feedback.innerHTML = data.error || 'Greška pri rezervaciji.';
-        feedback.style.color = '#e74c3c';
+        // Provjeri je li problem s dostupnošću termina
+        if (response.status === 409 && data.error && data.error.includes('više nije dostupan')) {
+          // Termin je u međuvremenu rezerviran
+          feedback.innerHTML = data.error + ' <span class="error-link" onclick="refreshAndGoBack()">Odaberite novi termin</span>';
+          feedback.style.color = '#e74c3c';
+        } else {
+          feedback.innerHTML = data.error || 'Greška pri rezervaciji.';
+          feedback.style.color = '#e74c3c';
+        }
       }
     } catch (err) {
       console.error(err);
