@@ -9,10 +9,10 @@ const { Pool } = require('pg');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const csrf = require('csrf');
-const db = require('./db');
-const emailService = require('./email');
-const securityLogger = require('./security-logger');
-const healthCheck = require('./health-check');
+const db = require('./backend/db');
+const emailService = require('./backend/email');
+const securityLogger = require('./backend/security-logger');
+const healthCheck = require('./backend/health-check');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
