@@ -1,39 +1,9 @@
-// Modal funkcije
-function showSuccessModal(appointment) {
-  console.log('Showing success modal for:', appointment);
-  const modal = document.getElementById('successModal');
-  const modalDetails = document.getElementById('modalDetails');
-  
-  // Koristi date i time koje server šalje direktno
-  const formattedDate = appointment.date || 'Nepoznat datum';
-  const formattedTime = appointment.time || 'Nepoznato vreme';
-  
-  modalDetails.innerHTML = `
-    <p><strong>Ime:</strong> ${appointment.ime} ${appointment.prezime}</p>
-    <p><strong>Usluga:</strong> ${appointment.service}</p>
-    <p><strong>Datum:</strong> ${formattedDate}</p>
-    <p><strong>Vrijeme:</strong> ${formattedTime}</p>
-  `;
-  
-  modal.style.display = 'block';
-}
-
-function closeModal() {
-  console.log('Closing modal');
-  const modal = document.getElementById('successModal');
-  modal.style.display = 'none';
+// Jednostavna funkcija za prikaz uspjeha
+function showSuccess(appointment) {
+  const message = `Rezervacija uspješna!\n\nIme: ${appointment.ime} ${appointment.prezime}\nUsluga: ${appointment.service}\nDatum: ${appointment.date}\nVrijeme: ${appointment.time}`;
+  alert(message);
   // Preusmjeri na početnu stranicu
-  setTimeout(() => {
-    window.location.href = '/';
-  }, 300);
-}
-
-// Zatvori modal klikom izvan njega
-window.onclick = function(event) {
-  const modal = document.getElementById('successModal');
-  if (event.target == modal) {
-    closeModal();
-  }
+  window.location.href = '/';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -84,16 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const time = timeInput.value;
     if (date && time) {
       try {
-        // Show loading state
-        availabilityStatus.innerHTML = '<div class="loading"></div>';
+        availabilityStatus.innerHTML = 'Provjeravam dostupnost...';
         
         const response = await fetch(`/api/check-availability?date=${date}&time=${time}`);
         const data = await response.json();
         if (data.available) {
-          availabilityStatus.innerHTML = '<i class="fas fa-check-circle"></i> Termin je dostupan!';
+          availabilityStatus.innerHTML = '✓ Termin je dostupan!';
           availabilityStatus.style.color = '#27ae60';
         } else {
-          availabilityStatus.innerHTML = '<i class="fas fa-times-circle"></i> Termin nije dostupan. Molimo odaberite drugi.';
+          availabilityStatus.innerHTML = '✗ Termin nije dostupan. Molimo odaberite drugi.';
           availabilityStatus.style.color = '#e74c3c';
         }
       } catch (err) {
@@ -126,29 +95,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = document.getElementById('confirm-booking');
 
     if (!date || !time || !ime || !prezime || !mobitel || !email) {
-      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Molimo popunite sva polja.';
+      feedback.innerHTML = 'Molimo popunite sva polja.';
       feedback.style.color = '#e74c3c';
       return;
     }
 
     if (!isValidEmail(email)) {
-      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Molimo unesite ispravnu email adresu.';
+      feedback.innerHTML = 'Molimo unesite ispravnu email adresu.';
       feedback.style.color = '#e74c3c';
       return;
     }
 
     if (!isValidPhoneNumber(mobitel)) {
-      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Molimo unesite ispravan broj mobitela (9 ili 10 znamenki).';
+      feedback.innerHTML = 'Molimo unesite ispravan broj mobitela (9 ili 10 znamenki).';
       feedback.style.color = '#e74c3c';
       return;
     }
 
     try {
-      // Show loading state
-      const originalButtonText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rezerviram...';
+      feedback.innerHTML = 'Rezerviram...';
       submitBtn.disabled = true;
-      feedback.innerHTML = '';
 
       const response = await fetch('/api/book', {
         method: 'POST',
@@ -170,22 +136,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Pokaži modal sa potvrdom
-        showSuccessModal(data.appointment);
+        // Pokaži jednostavan uspjeh
+        showSuccess(data.appointment);
         form.reset();
         availabilityStatus.innerHTML = '';
       } else {
-        feedback.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.error || 'Greška pri rezervaciji.'}`;
+        feedback.innerHTML = `${data.error || 'Greška pri rezervaciji.'}`;
         feedback.style.color = '#e74c3c';
       }
     } catch (err) {
       console.error(err);
-      feedback.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Greška pri povezivanju sa serverom.';
+      feedback.innerHTML = 'Greška pri povezivanju sa serverom.';
       feedback.style.color = '#e74c3c';
     } finally {
-      // Restore button state
-      submitBtn.innerHTML = originalButtonText;
       submitBtn.disabled = false;
+      feedback.innerHTML = '';
     }
   });
 });
