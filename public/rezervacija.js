@@ -172,7 +172,8 @@ async function loadAvailableTimes(date) {
   
   try {
     const bookedTimes = await fetchAvailableTimes(date);
-    const slots = generateTimeSlots(date, serviceDuration, bookedTimes);
+    const slots = generateTimeSlots(date, parseInt(serviceDuration), bookedTimes);
+    console.log('Generated slots for date:', date, 'duration:', parseInt(serviceDuration), 'slots count:', slots.length);
     
     if (slots.length === 0) {
       container.innerHTML = '<p>Salon je zatvoren ovog dana.</p>';
@@ -223,8 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Dohvati parametre iz URL-a
   const urlParams = new URLSearchParams(window.location.search);
   selectedService = urlParams.get('service');
-  serviceDuration = urlParams.get('duration');
-  servicePrice = urlParams.get('price');
+  serviceDuration = parseInt(urlParams.get('duration'));
+  servicePrice = parseFloat(urlParams.get('price'));
+
+  console.log('URL params:', { selectedService, serviceDuration, servicePrice });
 
   // Prikaži odabranu uslugu
   if (selectedService) {
@@ -313,6 +316,17 @@ document.addEventListener('DOMContentLoaded', () => {
       feedback.innerHTML = 'Rezerviram...';
       feedback.style.color = '#666';
 
+      console.log('Sending booking request with data:', {
+        ime,
+        prezime,
+        mobitel,
+        email,
+        service: selectedService,
+        duration: parseInt(serviceDuration),
+        price: parseFloat(servicePrice),
+        datetime: `${selectedDate}T${selectedTime}`
+      });
+
       const response = await fetch('/api/book', {
         method: 'POST',
         headers: {
@@ -324,8 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
           mobitel,
           email,
           service: selectedService,
-          duration: serviceDuration,
-          price: servicePrice,
+          duration: parseInt(serviceDuration),
+          price: parseFloat(servicePrice),
           datetime: `${selectedDate}T${selectedTime}`
         })
       });

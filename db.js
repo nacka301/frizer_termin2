@@ -123,45 +123,67 @@ async function checkAvailability(date, time) {
 
 // Funkcija za rezervaciju termina - s input validation
 async function bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime) {
+  console.log('DEBUG: bookAppointment called with:', { ime, prezime, mobitel, email, service, duration, price, datetime });
+  
   // Input validation
   const sanitizedIme = sanitizeString(ime);
   const sanitizedPrezime = sanitizeString(prezime);
   const sanitizedMobitel = sanitizeString(mobitel);
   const sanitizedService = sanitizeString(service);
 
+  console.log('DEBUG: After sanitization:', { sanitizedIme, sanitizedPrezime, sanitizedMobitel, sanitizedService });
+
   // Validation checks
   if (!sanitizedIme || sanitizedIme.length < 2) {
+    console.log('DEBUG: Ime validation failed');
     throw new Error('Ime mora imati najmanje 2 znakova');
   }
   if (!sanitizedPrezime || sanitizedPrezime.length < 2) {
+    console.log('DEBUG: Prezime validation failed');
     throw new Error('Prezime mora imati najmanje 2 znakova');
   }
   if (!validateEmail(email)) {
+    console.log('DEBUG: Email validation failed');
     throw new Error('Neispravna email adresa');
   }
   if (!validatePhone(sanitizedMobitel)) {
+    console.log('DEBUG: Phone validation failed');
     throw new Error('Neispravan broj telefona');
   }
   if (!validateService(sanitizedService)) {
+    console.log('DEBUG: Service validation failed');
     throw new Error('Neispravna usluga');
   }
   if (!validateDateTime(datetime)) {
+    console.log('DEBUG: DateTime validation failed for:', datetime);
     throw new Error('Neispravan datum i vrijeme');
   }
   if (isNaN(duration) || duration < 10 || duration > 120) {
+    console.log('DEBUG: Duration validation failed:', duration);
     throw new Error('Neispravno trajanje usluge');
   }
   if (isNaN(price) || price < 5 || price > 100) {
+    console.log('DEBUG: Price validation failed:', price);
     throw new Error('Neispravna cijena');
   }
+  
+  console.log('DEBUG: All validations passed');
 
   const client = await pool.connect();
+  console.log('DEBUG: Database client connected');
   try {
     await client.query('BEGIN');
+    console.log('DEBUG: Transaction started');
+    
     const [date, time] = datetime.split('T');
+    console.log('DEBUG: Split datetime:', { date, time });
+    
     const isAvailable = await checkAvailability(date, time);
+    console.log('DEBUG: Availability check result:', isAvailable);
+    
     if (!isAvailable) {
       await client.query('ROLLBACK');
+      console.log('DEBUG: Slot not available, rolled back');
       return false;
     }
     
@@ -169,17 +191,25 @@ async function bookAppointment(ime, prezime, mobitel, email, service, duration, 
     let formattedDatetime;
     if (date.includes('-') && date.length === 10) {
       // Y-m-d format (2024-01-15)
+      console.log('DEBUG: Using YYYY-MM-DD format');
       formattedDatetime = moment(datetime, "YYYY-MM-DDTHH:mm").format("YYYY-MM-DD HH:mm:ss");
     } else {
       // DD.MM.YYYY format (15.01.2024)
+      console.log('DEBUG: Using DD.MM.YYYY format');
       formattedDatetime = moment(datetime, "DD.MM.YYYYTHH:mm").format("YYYY-MM-DD HH:mm:ss");
     }
+    console.log('DEBUG: Formatted datetime:', formattedDatetime);
+    
+    console.log('DEBUG: About to insert appointment with params:', [sanitizedIme, sanitizedPrezime, sanitizedMobitel, email.toLowerCase(), sanitizedService, parseInt(duration), parseFloat(price), formattedDatetime]);
     
     const result = await client.query(
       'INSERT INTO appointments (ime, prezime, mobitel, email, service, duration, price, datetime) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       [sanitizedIme, sanitizedPrezime, sanitizedMobitel, email.toLowerCase(), sanitizedService, parseInt(duration), parseFloat(price), formattedDatetime]
     );
+    console.log('DEBUG: Insert successful, result:', result.rows[0]);
+    
     await client.query('COMMIT');
+    console.log('DEBUG: Transaction committed');
     console.log('Appointment booked:', { id: result.rows[0].id, datetime: formattedDatetime });
     return true;
   } catch (error) {

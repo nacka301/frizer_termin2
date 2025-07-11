@@ -138,13 +138,17 @@ app.get('/api/check-availability', async (req, res) => {
 
 // Endpoint za rezervaciju termina
 app.post('/api/book', async (req, res) => {
+  console.log('Booking request received:', req.body); // DEBUG
   const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
   if (!ime || !prezime || !mobitel || !email || !service || !duration || !price || !datetime) {
+    console.log('Missing fields detected'); // DEBUG
     securityLogger.logBooking(false, { reason: 'Missing required fields' }, req.ip, req.get('User-Agent'));
     return res.status(400).json({ error: 'Svi podaci su obavezni.' });
   }
   try {
+    console.log('Calling db.bookAppointment...'); // DEBUG
     const booked = await db.bookAppointment(ime, prezime, mobitel, email, service, duration, price, datetime);
+    console.log('bookAppointment result:', booked); // DEBUG
     if (booked) {
       // Log successful booking
       securityLogger.logBooking(true, { ime, prezime, service, datetime }, req.ip, req.get('User-Agent'));
@@ -175,11 +179,13 @@ app.post('/api/book', async (req, res) => {
         } 
       });
     } else {
+      console.log('Booking failed - slot not available'); // DEBUG
       securityLogger.logBooking(false, { reason: 'Slot no longer available' }, req.ip, req.get('User-Agent'));
       res.status(409).json({ error: 'Termin više nije dostupan.' });
     }
   } catch (error) {
-    console.error('Error booking appointment:', error);
+    console.error('Error booking appointment:', error); // ENHANCED DEBUG
+    console.error('Error stack:', error.stack); // ENHANCED DEBUG
     res.status(500).json({ error: 'Greška pri rezervaciji termina.' });
   }
 });
