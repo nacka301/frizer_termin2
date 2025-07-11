@@ -230,11 +230,22 @@ document.addEventListener('DOMContentLoaded', () => {
       `<strong>Odabrana usluga:</strong> ${selectedService} (${serviceDuration} min) - ${servicePrice}€`;
   }
 
-  // Inicijalizacija Flatpickr za datum
+  // Inicijalizacija Flatpickr za datum - lokalizacija na hrvatski
   flatpickr('#date', {
     minDate: "today",
     maxDate: new Date().fp_incr(30),
     dateFormat: "Y-m-d",
+    locale: {
+      firstDayOfWeek: 1, // Ponedjeljak je prvi dan u tjednu
+      weekdays: {
+        shorthand: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'],
+        longhand: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota']
+      },
+      months: {
+        shorthand: ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'],
+        longhand: ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj', 'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac']
+      }
+    },
     onChange: function(selectedDates, dateStr) {
       if (dateStr) {
         selectedDate = dateStr;

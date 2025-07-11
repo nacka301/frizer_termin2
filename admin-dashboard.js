@@ -3,11 +3,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const appointmentsDiv = document.getElementById('appointments');
     const selectedDateDiv = document.getElementById('selectedDate');
 
-    // Inicijalizacija kalendara
+    // Inicijalizacija kalendara - lokalizacija na hrvatski
     flatpickr(calendarEl, {
         inline: true,
         dateFormat: "Y-m-d",
         defaultDate: new Date(),
+        locale: {
+            firstDayOfWeek: 1, // Ponedjeljak je prvi dan u tjednu
+            weekdays: {
+                shorthand: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'],
+                longhand: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota']
+            },
+            months: {
+                shorthand: ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'],
+                longhand: ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj', 'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac']
+            }
+        },
         onChange: function(selectedDates, dateStr, instance) {
             if (dateStr) {
                 fetchAppointments(dateStr);
