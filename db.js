@@ -151,6 +151,36 @@ async function deleteAppointment(id) {
   }
 }
 
+// Funkcija za dohvaćanje rezerviranih vremena za određeni datum
+async function getBookedTimesForDate(date) {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT EXTRACT(HOUR FROM datetime) as hour, 
+             EXTRACT(MINUTE FROM datetime) as minute
+      FROM appointments 
+      WHERE DATE(datetime) = $1
+      ORDER BY datetime
+    `;
+    
+    const result = await client.query(query, [date]);
+    
+    // Formatiranje vremena u HH:MM format
+    const bookedTimes = result.rows.map(row => {
+      const hour = String(row.hour).padStart(2, '0');
+      const minute = String(row.minute).padStart(2, '0');
+      return `${hour}:${minute}`;
+    });
+    
+    return bookedTimes;
+  } catch (error) {
+    console.error('Error getting booked times for date:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 // Izvoz funkcija za korištenje u drugim dijelovima aplikacije
 module.exports = {
   pool,
@@ -160,7 +190,8 @@ module.exports = {
   getAllAppointments,
   getAppointmentsByDate,
   deleteAppointment,
-  getAvailableSlots
+  getAvailableSlots,
+  getBookedTimesForDate
 };
 
 // Inicijalizacija baze podataka pri pokretanju

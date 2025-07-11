@@ -118,6 +118,24 @@ app.get('/api/available-slots', async (req, res) => {
   }
 });
 
+// Endpoint za dohvaćanje dostupnih termina za određeni datum
+app.get('/api/available-times', async (req, res) => {
+  const { date } = req.query;
+  
+  if (!date) {
+    return res.status(400).json({ error: 'Datum je obavezan.' });
+  }
+  
+  try {
+    // Dohvati sva već rezervirana vremena za taj datum
+    const bookedTimes = await db.getBookedTimesForDate(date);
+    res.json({ bookedTimes });
+  } catch (error) {
+    console.error('Error fetching available times:', error);
+    res.status(500).json({ error: 'Interna greška servera.' });
+  }
+});
+
 // Admin login endpoint
 app.post('/api/admin-login', async (req, res) => {
   console.log('Admin login attempt:', req.body);

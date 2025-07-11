@@ -6,7 +6,101 @@
   <title>Rezervacija - Frizerski Salon Novica</title>
   <link rel="stylesheet" href="style_simple.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .reservation-step {
+      background: white;
+      padding: 2rem;
+      margin: 2rem 0;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .time-slot {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .time-slot:hover {
+      background: #e3f2fd;
+      border-color: #2196f3;
+    }
+    
+    .time-slot.selected {
+      background: #2196f3;
+      color: white;
+      border-color: #1976d2;
+    }
+    
+    .time-slot.unavailable {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    .selected-info {
+      background: #e8f5e8;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      border-left: 4px solid #4caf50;
+    }
+    
+    .back-btn {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    
+    .back-btn:hover {
+      background: #5a6268;
+    }
+    
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    
+    .step {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 1rem;
+      font-weight: bold;
+    }
+    
+    .step.active {
+      background: #2196f3;
+      color: white;
+    }
+    
+    .step.completed {
+      background: #4caf50;
+      color: white;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -19,36 +113,67 @@
   </header>
 
   <main class="reservation-container">
-    <section id="booking-form" class="reservation-form">
-      <h2>Odaberi datum i vrijeme</h2>
-      <p id="selected-service" class="selected-service"></p>
-      <form id="reservation-form">
+    <div class="container">
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-indicator-1">1</div>
+        <div class="step" id="step-indicator-2">2</div>
+        <div class="step" id="step-indicator-3">3</div>
+      </div>
+
+      <!-- Korak 1: Odabir datuma -->
+      <section id="step1" class="reservation-step">
+        <h2>Korak 1: Odaberite datum</h2>
+        <p id="selected-service" class="selected-service"></p>
+        
         <div class="form-group">
-          <input type="text" id="ime" required placeholder="Ime">
+          <label for="date">Odaberite datum:</label>
+          <input type="text" id="date" placeholder="Kliknite za odabir datuma">
         </div>
-        <div class="form-group">
-          <input type="text" id="prezime" required placeholder="Prezime">
+        <div id="date-feedback" class="feedback"></div>
+      </section>
+
+      <!-- Korak 2: Odabir slobodnog termina -->
+      <section id="step2" class="reservation-step" style="display: none;">
+        <h2>Korak 2: Odaberite slobodan termin</h2>
+        <p>Datum: <strong id="selected-date-display"></strong></p>
+        <div id="available-times" class="time-slots">
+          <div class="time-slot">Učitavam...</div>
         </div>
-        <div class="form-group">
-          <input type="tel" id="mobitel" required placeholder="Broj mobitela">
+        <button id="back-to-date" class="back-btn">← Promijeni datum</button>
+      </section>
+
+      <!-- Korak 3: Unos podataka -->
+      <section id="step3" class="reservation-step" style="display: none;">
+        <h2>Korak 3: Unesite vaše podatke</h2>
+        <div class="selected-info">
+          <p><strong>Usluga:</strong> <span id="final-service"></span></p>
+          <p><strong>Datum:</strong> <span id="final-date"></span></p>
+          <p><strong>Vrijeme:</strong> <span id="final-time"></span></p>
         </div>
-        <div class="form-group">
-          <input type="email" id="email" required placeholder="Email adresa">
-        </div>
-        <div class="datetime-container">
+        
+        <form id="reservation-form">
           <div class="form-group">
-            <input type="text" id="date" required placeholder="Datum">
+            <input type="text" id="ime" required placeholder="Ime">
           </div>
           <div class="form-group">
-            <input type="text" id="time" required placeholder="Vrijeme">
+            <input type="text" id="prezime" required placeholder="Prezime">
           </div>
-        </div>
-        <p id="availability-status" class="availability-status"></p>
-        <button type="submit" id="confirm-booking" class="confirm-btn">
-          Potvrdi rezervaciju
-        </button>
-      </form>
-      <p id="feedback" class="feedback"></p>    </section>
+          <div class="form-group">
+            <input type="tel" id="mobitel" required placeholder="Broj mobitela">
+          </div>
+          <div class="form-group">
+            <input type="email" id="email" required placeholder="Email adresa">
+          </div>
+          
+          <button type="submit" id="confirm-booking" class="confirm-btn">
+            Potvrdi rezervaciju
+          </button>
+          <button type="button" id="back-to-time" class="back-btn">← Promijeni termin</button>
+        </form>
+        <p id="feedback" class="feedback"></p>
+      </section>
+    </div>
   </main>
 
   <!-- Success Modal -->
@@ -79,8 +204,8 @@
         <div class="footer-section">
           <h3>Kontakt</h3>
           <p>Ulica Lipe 123, Zagreb</p>
-          <p>Telefon: 01 234 5678</p>
-          <p>Email: info@salonnovica.hr</p>
+          <p>📞 01 234 5678</p>
+          <p>✉️ info@salon-novica.hr</p>
         </div>
       </div>
     </div>

@@ -1,28 +1,28 @@
+// Globalne varijable
+let selectedDate = null;
+let selectedTime = null;
+let selectedService = null;
+let serviceDuration = null;
+let servicePrice = null;
+
 // Modal funkcije
 function showSuccessModal(appointment) {
-  console.log('Showing success modal for:', appointment);
   const modal = document.getElementById('successModal');
   const modalDetails = document.getElementById('modalDetails');
-  
-  // Koristi date i time koje server šalje direktno
-  const formattedDate = appointment.date || 'Nepoznat datum';
-  const formattedTime = appointment.time || 'Nepoznato vrijeme';
   
   modalDetails.innerHTML = `
     <p><strong>Ime:</strong> ${appointment.ime} ${appointment.prezime}</p>
     <p><strong>Usluga:</strong> ${appointment.service}</p>
-    <p><strong>Datum:</strong> ${formattedDate}</p>
-    <p><strong>Vrijeme:</strong> ${formattedTime}</p>
+    <p><strong>Datum:</strong> ${appointment.date}</p>
+    <p><strong>Vrijeme:</strong> ${appointment.time}</p>
   `;
   
   modal.style.display = 'block';
 }
 
 function closeModal() {
-  console.log('Closing modal');
   const modal = document.getElementById('successModal');
   modal.style.display = 'none';
-  // Preusmjeri na početnu stranicu
   setTimeout(() => {
     window.location.href = '/';
   }, 300);
@@ -36,95 +36,196 @@ window.onclick = function(event) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('reservation-form');
-  const dateInput = document.getElementById('date');
-  const timeInput = document.getElementById('time');
-  const feedback = document.getElementById('feedback');
-  const availabilityStatus = document.getElementById('availability-status');
-  const selectedServiceElement = document.getElementById('selected-service');
+// Validation funkcije
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
 
-  // Dohvati parametre iz URL-a
-  const urlParams = new URLSearchParams(window.location.search);
-  const service = urlParams.get('service');
-  const duration = urlParams.get('duration');
-  const price = urlParams.get('price');
+function isValidPhoneNumber(phone) {
+  const re = /^[0-9]{9,10}$/;
+  return re.test(phone);
+}
 
-  // Prikaži odabranu uslugu
-  selectedServiceElement.textContent = `Odabrana usluga: ${service} (${duration}, ${price})`;
-
-  // Inicijalizacija Flatpickr za datum i vrijeme
-  flatpickr(dateInput, {
-    minDate: "today",
-    maxDate: new Date().fp_incr(30), // Dozvoli rezervacije do 30 dana unaprijed
-    dateFormat: "d.m.Y", // Format datuma
-    altInput: true,
-    altFormat: "d.m.Y",
-    placeholder: "Datum"
+// Step navigation functions
+function showStep(stepNumber) {
+  // Hide all steps
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step3').style.display = 'none';
+  
+  // Update step indicators
+  document.querySelectorAll('.step').forEach(step => {
+    step.classList.remove('active', 'completed');
   });
+  
+  // Show current step and update indicators
+  document.getElementById(`step${stepNumber}`).style.display = 'block';
+  document.getElementById(`step-indicator-${stepNumber}`).classList.add('active');
+  
+  // Mark previous steps as completed
+  for (let i = 1; i < stepNumber; i++) {
+    document.getElementById(`step-indicator-${i}`).classList.add('completed');
+  }
+}
 
-  flatpickr(timeInput, {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "H:i",
-    minTime: "09:00",
-    maxTime: "18:00",
-    altInput: true,
-    altFormat: "H:i",
-    placeholder: "Vrijeme"
-  });
-
-  // Provjeri dostupnost kada se odabere datum i vrijeme
-  [dateInput, timeInput].forEach(input => {
-    input.addEventListener('change', checkAvailability);
-  });
-
-  async function checkAvailability() {
-    const date = dateInput.value;
-    const time = timeInput.value;
-    if (date && time) {
-      try {
-        availabilityStatus.innerHTML = 'Provjeravam dostupnost...';
-        
-        const response = await fetch(`/api/check-availability?date=${date}&time=${time}`);
-        const data = await response.json();
-        if (data.available) {
-          availabilityStatus.innerHTML = '✓ Termin je dostupan!';
-          availabilityStatus.style.color = '#27ae60';
-        } else {
-          availabilityStatus.innerHTML = '✗ Termin nije dostupan. Molimo odaberite drugi.';
-          availabilityStatus.style.color = '#e74c3c';
-        }
-      } catch (err) {
-        console.error(err);
-        availabilityStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Greška pri provjeri dostupnosti.';
-        availabilityStatus.style.color = '#e74c3c';
-      }
+// Generate available time slots
+function generateTimeSlots(date, duration, bookedTimes = []) {
+  const slots = [];
+  const startHour = 9;
+  const endHour = 18;
+  const slotDuration = parseInt(duration);
+  
+  // Check if it's Saturday (different hours)
+  const dayOfWeek = new Date(date).getDay();
+  const actualEndHour = dayOfWeek === 6 ? 14 : endHour; // Saturday ends at 14:00
+  
+  // Check if it's Sunday (closed)
+  if (dayOfWeek === 0) {
+    return [];
+  }
+  
+  for (let hour = startHour; hour < actualEndHour; hour++) {
+    for (let minute = 0; minute < 60; minute += slotDuration) {
+      if (hour * 60 + minute + slotDuration > actualEndHour * 60) break;
+      
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      const isBooked = bookedTimes.includes(timeString);
+      
+      slots.push({
+        time: timeString,
+        available: !isBooked
+      });
     }
   }
+  
+  return slots;
+}
 
-  function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+// Fetch available times from server
+async function fetchAvailableTimes(date) {
+  try {
+    const response = await fetch(`/api/available-times?date=${date}`);
+    const data = await response.json();
+    return data.bookedTimes || [];
+  } catch (error) {
+    console.error('Error fetching available times:', error);
+    return [];
+  }
+}
+
+// Load available times and display them
+async function loadAvailableTimes(date) {
+  const container = document.getElementById('available-times');
+  container.innerHTML = '<div class="time-slot">Učitavam dostupne termine...</div>';
+  
+  try {
+    const bookedTimes = await fetchAvailableTimes(date);
+    const slots = generateTimeSlots(date, serviceDuration, bookedTimes);
+    
+    if (slots.length === 0) {
+      container.innerHTML = '<p>Salon je zatvoren ovog dana.</p>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    slots.forEach(slot => {
+      const slotElement = document.createElement('div');
+      slotElement.className = `time-slot ${!slot.available ? 'unavailable' : ''}`;
+      slotElement.textContent = slot.time;
+      
+      if (slot.available) {
+        slotElement.addEventListener('click', () => {
+          // Remove selection from other slots
+          document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+          
+          // Select this slot
+          slotElement.classList.add('selected');
+          selectedTime = slot.time;
+          
+          // Enable next step after a short delay
+          setTimeout(() => {
+            document.getElementById('final-service').textContent = selectedService;
+            document.getElementById('final-date').textContent = new Date(selectedDate).toLocaleDateString('hr-HR');
+            document.getElementById('final-time').textContent = selectedTime;
+            showStep(3);
+          }, 500);
+        });
+      }
+      
+      container.appendChild(slotElement);
+    });
+    
+    if (slots.every(slot => !slot.available)) {
+      const noSlotsMsg = document.createElement('p');
+      noSlotsMsg.textContent = 'Nema dostupnih termina za ovaj dan.';
+      container.appendChild(noSlotsMsg);
+    }
+    
+  } catch (error) {
+    container.innerHTML = '<p style="color: red;">Greška pri učitavanju termina.</p>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Dohvati parametre iz URL-a
+  const urlParams = new URLSearchParams(window.location.search);
+  selectedService = urlParams.get('service');
+  serviceDuration = urlParams.get('duration');
+  servicePrice = urlParams.get('price');
+
+  // Prikaži odabranu uslugu
+  if (selectedService) {
+    document.getElementById('selected-service').innerHTML = 
+      `<strong>Odabrana usluga:</strong> ${selectedService} (${serviceDuration} min) - ${servicePrice}€`;
   }
 
-  function isValidPhoneNumber(phone) {
-    const re = /^[0-9]{9,10}$/;  // Pretpostavljamo hrvatski format broja mobitela
-    return re.test(phone);
-  }
+  // Inicijalizacija Flatpickr za datum
+  flatpickr('#date', {
+    minDate: "today",
+    maxDate: new Date().fp_incr(30),
+    dateFormat: "Y-m-d",
+    onChange: function(selectedDates, dateStr) {
+      if (dateStr) {
+        selectedDate = dateStr;
+        document.getElementById('selected-date-display').textContent = 
+          new Date(dateStr).toLocaleDateString('hr-HR', { 
+            weekday: 'long', 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          });
+        
+        // Load available times and show step 2
+        loadAvailableTimes(dateStr);
+        showStep(2);
+      }
+    }
+  });
 
-  // Potvrdi i pošalji termin
-  form.addEventListener('submit', async (e) => {
+  // Back button handlers
+  document.getElementById('back-to-date').addEventListener('click', () => {
+    showStep(1);
+  });
+
+  document.getElementById('back-to-time').addEventListener('click', () => {
+    showStep(2);
+  });
+
+  // Form submission
+  document.getElementById('reservation-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const date = dateInput.value;
-    const time = timeInput.value;
+    
     const ime = document.getElementById('ime').value;
     const prezime = document.getElementById('prezime').value;
     const mobitel = document.getElementById('mobitel').value;
     const email = document.getElementById('email').value;
+    const feedback = document.getElementById('feedback');
     const submitBtn = document.getElementById('confirm-booking');
 
-    if (!date || !time || !ime || !prezime || !mobitel || !email) {
+    // Validation
+    if (!ime || !prezime || !mobitel || !email) {
       feedback.innerHTML = 'Molimo popunite sva polja.';
       feedback.style.color = '#e74c3c';
       return;
@@ -144,6 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       feedback.innerHTML = 'Rezerviram...';
+      feedback.style.color = '#666';
       submitBtn.disabled = true;
 
       const response = await fetch('/api/book', {
@@ -156,22 +258,19 @@ document.addEventListener('DOMContentLoaded', () => {
           prezime,
           mobitel,
           email,
-          service,
-          duration,
-          price,
-          datetime: `${date}T${time}`
+          service: selectedService,
+          duration: serviceDuration,
+          price: servicePrice,
+          datetime: `${selectedDate}T${selectedTime}`
         })
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Pokaži modal sa potvrdom
         showSuccessModal(data.appointment);
-        form.reset();
-        availabilityStatus.innerHTML = '';
       } else {
-        feedback.innerHTML = `${data.error || 'Greška pri rezervaciji.'}`;
+        feedback.innerHTML = data.error || 'Greška pri rezervaciji.';
         feedback.style.color = '#e74c3c';
       }
     } catch (err) {
@@ -180,7 +279,9 @@ document.addEventListener('DOMContentLoaded', () => {
       feedback.style.color = '#e74c3c';
     } finally {
       submitBtn.disabled = false;
-      feedback.innerHTML = '';
+      if (feedback.innerHTML === 'Rezerviram...') {
+        feedback.innerHTML = '';
+      }
     }
   });
 });
