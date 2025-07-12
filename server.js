@@ -106,9 +106,10 @@ app.use(session({
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://your-domain.com', 
-        'https://www.your-domain.com',
-        'http://your-server-ip:3000'
+        'http://46.62.158.138:3000',
+        'http://46.62.158.138',
+        'https://46.62.158.138:3000',
+        'https://46.62.158.138'
       ] 
     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
