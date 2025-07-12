@@ -401,7 +401,7 @@ app.get('/api/security-analytics', requireAuth, async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Općeniti error handler s logiranjem
