@@ -4,3 +4,19 @@ logs/
 *.log
 .DS_Store
 Thumbs.db
+
+# Docker volumes
+postgres_data/
+
+# Database files
+*.db
+*.sqlite
+database.sqlite
+appointments.db
+
+# Temporary files
+temp_*
+
+# Editor files
+.vscode/
+.idea/

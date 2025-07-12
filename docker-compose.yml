@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: frizerke-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://frizerke_user:frizerke_password@postgres:5432/frizerke_db
+      - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_change_in_production}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@salon.hr}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - frizerke-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: frizerke-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=frizerke_db
+      - POSTGRES_USER=frizerke_user
+      - POSTGRES_PASSWORD=frizerke_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U frizerke_user -d frizerke_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - frizerke-network
+
+volumes:
+  postgres_data:
+
+networks:
+  frizerke-network:
+    driver: bridge

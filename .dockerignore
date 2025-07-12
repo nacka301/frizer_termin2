@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.coverage
+*.log
+*.db
+database.sqlite
+appointments.db
+temp_style.css
+.DS_Store
+Thumbs.db

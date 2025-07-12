@@ -102,10 +102,14 @@ app.use(session({
   }
 }));
 
-// CORS configuration for Render
+// CORS configuration for Hetzner deployment
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://frizerke-html.onrender.com', 'https://your-app-name.onrender.com'] 
+    ? [
+        'https://your-domain.com', 
+        'https://www.your-domain.com',
+        'http://your-server-ip:3000'
+      ] 
     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
   optionsSuccessStatus: 200
