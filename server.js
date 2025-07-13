@@ -409,6 +409,7 @@ app.get('/admin-dashboard', (req, res) => {
 
 // Root route
 // Health check endpoint
+// Health check endpoint (osnovni)
 app.get('/health', async (req, res) => {
   try {
     const healthStatus = await healthCheck.performHealthCheck();
@@ -421,6 +422,26 @@ app.get('/health', async (req, res) => {
       error: error.message
     });
   }
+});
+
+// Full health check endpoint (testira bazu i backend)
+app.get('/api/health-full', async (req, res) => {
+  let dbStatus = 'unknown';
+  let dbError = null;
+  try {
+    // Pokušaj dohvatiti 1 termin iz baze
+    const appointments = await db.getAllAppointments();
+    dbStatus = 'ok';
+  } catch (error) {
+    dbStatus = 'error';
+    dbError = error.message;
+  }
+  res.json({
+    app: 'ok',
+    db: dbStatus,
+    dbError,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Security analytics endpoint (admin only)
