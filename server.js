@@ -151,7 +151,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Middleware to check if user is authenticated
 function requireAuth(req, res, next) {
