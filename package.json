@@ -2,5 +2,8 @@
   "name": "frizer_termin2",
   "version": "1.0.0",
   "main": "server.js",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
