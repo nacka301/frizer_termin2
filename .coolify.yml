@@ -1,0 +1,37 @@
+# Coolify Deployment Configuration
+# Place this in your project root as .coolify.yml
+
+version: '1'
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - app_logs:/app/logs
+  
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=frizerke_db
+      - POSTGRES_USER=frizerke_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U frizerke_user -d frizerke_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  app_logs:

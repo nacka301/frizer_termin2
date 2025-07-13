@@ -13,6 +13,7 @@ const db = require('./backend/db');
 const emailService = require('./backend/email');
 const securityLogger = require('./backend/security-logger');
 const healthCheck = require('./backend/health-check');
+const { detectTenant, getSalonConfigAPI } = require('./backend/multi-tenant');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,27 @@ const csrfProtection = csrf();
 // Debug logging
 console.log('Starting server...');
 console.log('Environment:', process.env.NODE_ENV);
+
+// Add tenant detection middleware EARLY in the pipeline
+app.use(detectTenant);
+
+// Environment validation for production
+if (process.env.NODE_ENV === 'production') {
+  const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    console.error('❌ Missing required environment variables:', missingVars.join(', '));
+    process.exit(1);
+  }
+  
+  if (process.env.SESSION_SECRET === 'your-secret-key-change-in-production') {
+    console.error('❌ Please change SESSION_SECRET from default value in production!');
+    process.exit(1);
+  }
+  
+  console.log('✅ All required environment variables are set');
+}
 
 // Start periodic health checks
 healthCheck.startPeriodicChecks(5); // Every 5 minutes
@@ -40,45 +62,44 @@ app.use(helmet({
   }
 }));
 
-// Rate limiting s logiranjem
-// Rate limiting DISABLED za testiranje
-// const generalLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minuta
-//   max: 100, // maksimalno 100 zahtjeva po IP adresi
-//   message: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.',
-//   standardHeaders: true,
-//   legacyHeaders: false,
-//   handler: (req, res) => {
-//     securityLogger.logRateLimit('general', req.ip, req.get('User-Agent'));
-//     res.status(429).json({ error: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.' });
-//   }
-// });
+// Rate limiting s logiranjem - AKTIVIRANO ZA PRODUKCIJU
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuta
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // Stroži limiti za produkciju
+  message: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    securityLogger.logRateLimit('general', req.ip, req.get('User-Agent'));
+    res.status(429).json({ error: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.' });
+  }
+});
 
-// const authLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minuta
-//   max: 5, // maksimalno 5 login pokušaja
-//   message: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.',
-//   standardHeaders: true,
-//   legacyHeaders: false,
-//   handler: (req, res) => {
-//     securityLogger.logRateLimit('auth', req.ip, req.get('User-Agent'));
-//     res.status(429).json({ error: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.' });
-//   }
-// });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuta
+  max: process.env.NODE_ENV === 'production' ? 5 : 20, // Stroži limiti za produkciju
+  message: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    securityLogger.logRateLimit('auth', req.ip, req.get('User-Agent'));
+    res.status(429).json({ error: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.' });
+  }
+});
 
-// const bookingLimiter = rateLimit({
-//   windowMs: 60 * 60 * 1000, // 1 sat
-//   max: 100, // maksimalno 100 rezervacija po satu
-//   message: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.',
-//   standardHeaders: true,
-//   legacyHeaders: false,
-//   handler: (req, res) => {
-//     securityLogger.logRateLimit('booking', req.ip, req.get('User-Agent'));
-//     res.status(429).json({ error: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.' });
-//   }
-// });
+const bookingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 sat
+  max: process.env.NODE_ENV === 'production' ? 10 : 100, // Stroži limiti za produkciju
+  message: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    securityLogger.logRateLimit('booking', req.ip, req.get('User-Agent'));
+    res.status(429).json({ error: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.' });
+  }
+});
 
-// app.use(generalLimiter); // DISABLED
+app.use(generalLimiter); // AKTIVIRANO
 
 // Session configuration
 const sessionPool = new Pool({
@@ -95,22 +116,33 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false, // Disable secure for now to allow HTTP testing
+    secure: process.env.NODE_ENV === 'production' && process.env.HTTPS_ONLY !== 'false', // HTTPS u produkciji
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax'
   }
 }));
 
-// CORS configuration for Hetzner deployment
+// CORS configuration for Coolify deployment
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? [
-        'http://46.62.158.138:3000',
-        'http://46.62.158.138',
-        'https://46.62.158.138:3000',
-        'https://46.62.158.138'
-      ] 
+    ? function (origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, Postman, etc.)
+        if (!origin) return callback(null, true);
+        
+        // For Coolify, allow the domain from environment variable
+        const allowedOrigins = [
+          process.env.APP_URL, // Coolify sets this automatically
+          process.env.COOLIFY_URL,
+          origin // Allow same origin
+        ].filter(Boolean);
+        
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      }
     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
   optionsSuccessStatus: 200
@@ -129,6 +161,9 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// API endpoint to get salon configuration for frontend
+app.get('/api/salon-config', getSalonConfigAPI);
+
 // Endpoint za provjeru dostupnosti
 app.get('/api/check-availability', async (req, res) => {
   const { date, time } = req.query;
@@ -142,7 +177,7 @@ app.get('/api/check-availability', async (req, res) => {
 });
 
 // Endpoint za rezervaciju termina
-app.post('/api/book', async (req, res) => {
+app.post('/api/book', bookingLimiter, async (req, res) => {
   console.log('Booking request received:', req.body); // DEBUG
   const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
   if (!ime || !prezime || !mobitel || !email || !service || !duration || !price || !datetime) {
@@ -256,7 +291,7 @@ app.get('/api/available-times', async (req, res) => {
 });
 
 // Admin login endpoint
-app.post('/api/admin-login', async (req, res) => {
+app.post('/api/admin-login', authLimiter, async (req, res) => {
   console.log('Admin login attempt:', req.body);
   const { username, password } = req.body;
 

@@ -43,8 +43,30 @@ if [ ! -f .env ]; then
     print_warning ".env file not found. Creating from .env.example..."
     cp .env.example .env
     print_warning "Please edit .env file with your actual configuration before running again."
+    print_warning "Run 'node generate-session-secret.js' to generate a secure SESSION_SECRET"
     exit 1
 fi
+
+# Validate critical environment variables
+print_status "Validating environment configuration..."
+source .env
+
+if [ "$SESSION_SECRET" = "CHANGE_THIS_TO_STRONG_RANDOM_STRING_MINIMUM_32_CHARS" ]; then
+    print_error "Please change SESSION_SECRET from default value!"
+    print_warning "Run 'node generate-session-secret.js' to generate a secure one"
+    exit 1
+fi
+
+# Check other required variables
+REQUIRED_VARS=("POSTGRES_PASSWORD" "EMAIL_USER" "EMAIL_PASS" "ADMIN_EMAIL")
+for var in "${REQUIRED_VARS[@]}"; do
+    if [ -z "${!var}" ]; then
+        print_error "Required environment variable $var is not set"
+        exit 1
+    fi
+done
+
+print_status "✅ Environment validation passed"
 
 # Stop existing containers
 print_status "Stopping existing containers..."

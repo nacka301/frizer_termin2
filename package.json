@@ -10,7 +10,10 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "init-db": "node -e 'require(\"./backend/db.js\").initializeDatabase()'",
-    "build": "echo 'No build step required'"
+    "build": "echo 'No build step required'",
+    "generate-secret": "node generate-session-secret.js",
+    "cleanup-sessions": "node -e 'require(\"./backend/db.js\").cleanupExpiredSessions()'",
+    "coolify:deploy": "echo 'Push to GitHub to trigger Coolify deployment'"
   },
   "keywords": ["frizerski", "salon", "rezervacija", "booking"],
   "author": "Your Name",
