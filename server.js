@@ -62,44 +62,7 @@ app.use(helmet({
   }
 }));
 
-// Rate limiting s logiranjem - AKTIVIRANO ZA PRODUKCIJU
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minuta
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // Stroži limiti za produkciju
-  message: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    securityLogger.logRateLimit('general', req.ip, req.get('User-Agent'));
-    res.status(429).json({ error: 'Previše zahtjeva s ove IP adrese, pokušajte ponovo za 15 minuta.' });
-  }
-});
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minuta
-  max: process.env.NODE_ENV === 'production' ? 5 : 20, // Stroži limiti za produkciju
-  message: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    securityLogger.logRateLimit('auth', req.ip, req.get('User-Agent'));
-    res.status(429).json({ error: 'Previše neuspješnih pokušaja prijave, pokušajte ponovo za 15 minuta.' });
-  }
-});
-
-const bookingLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 sat
-  max: process.env.NODE_ENV === 'production' ? 10 : 100, // Stroži limiti za produkciju
-  message: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res) => {
-    securityLogger.logRateLimit('booking', req.ip, req.get('User-Agent'));
-    res.status(429).json({ error: 'Previše rezervacija u kratkom vremenu, pokušajte ponovo za sat vremena.' });
-  }
-});
-
-app.use(generalLimiter); // AKTIVIRANO
 
 // Session configuration
 const sessionPool = new Pool({
@@ -176,7 +139,7 @@ app.get('/api/check-availability', async (req, res) => {
 });
 
 // Endpoint za rezervaciju termina
-app.post('/api/book', bookingLimiter, async (req, res) => {
+app.post('/api/book', async (req, res) => {
   console.log('Booking request received:', req.body); // DEBUG
   const { ime, prezime, mobitel, email, service, duration, price, datetime } = req.body;
   if (!ime || !prezime || !mobitel || !email || !service || !duration || !price || !datetime) {
