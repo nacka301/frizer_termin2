@@ -11,6 +11,5 @@ coverage
 *.db
 database.sqlite
 appointments.db
-temp_style.css
 .DS_Store
 Thumbs.db
