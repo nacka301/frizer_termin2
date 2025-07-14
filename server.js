@@ -253,7 +253,7 @@ app.get('/api/available-times', async (req, res) => {
 });
 
 // Admin login endpoint
-app.post('/api/admin-login', authLimiter, async (req, res) => {
+app.post('/api/admin-login', async (req, res) => {
   console.log('Admin login attempt:', req.body);
   const { username, password } = req.body;
 
