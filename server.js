@@ -78,8 +78,13 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production' && process.env.HTTPS_ONLY !== 'false', // HTTPS u produkciji
+  cookie: {
+    secure: (req, res) => {
+      // Ako je zahtjev preko HTTPS, cookie je secure
+      if (req.secure || req.headers['x-forwarded-proto'] === 'https') return true;
+      // Inače (HTTP, lokalno testiranje) nije secure
+      return false;
+    },
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax'
@@ -366,7 +371,7 @@ app.get('/admin-login', (req, res) => {
 });
 
 app.get('/admin-dashboard', (req, res) => {
-  // res.sendFile(path.join(__dirname, 'frontend', 'admin_dashboard.html'));
+  res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html'));
 });
 
 // Root route
