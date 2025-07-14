@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://frizerke_user:frizerke_password@postgres:5432/frizerke_db
+      - DATABASE_URL=postgres://postgres:lozinka123@ws8ggkwkgw0kww8csgwgwkg:5432/postgres
       - SESSION_SECRET=${SESSION_SECRET:-default_session_secret_change_in_production}
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
