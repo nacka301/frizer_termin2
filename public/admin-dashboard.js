@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const logoutBtn = document.querySelector('.logout-btn') || document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async function() {
-      await fetch('/api/admin-logout', { method: 'POST' });
-      window.location.href = '/admin-login';
+      await fetch('/api/admin-logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/admin-login.html';
     });
   }
 
