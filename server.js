@@ -110,8 +110,7 @@ app.use(session({
     process.env.NODE_ENV === 'production'
       ? {
           secure: true,
-          sameSite: 'none',
-          domain: '.mojafrizereka.com'
+          sameSite: 'none'
         }
       : {
           secure: false,
