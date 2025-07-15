@@ -60,29 +60,22 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       connectSrc: [
         "'self'",
-        "https://cdn.jsdelivr.net",
         "https://fonts.googleapis.com",
         "https://fonts.gstatic.com"
       ],
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
-        "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com",
-        "https://cdn.jsdelivr.net"
+        "https://fonts.googleapis.com"
       ],
       fontSrc: [
         "'self'",
-        "https://fonts.gstatic.com",
-        "https://fonts.googleapis.com",
-        "https://cdn.jsdelivr.net"
+        "https://fonts.gstatic.com"
       ],
       scriptSrc: [
         "'self'",
         "'unsafe-inline'",
-        "https://cdn.jsdelivr.net",
-        "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com"
+        "https://cdn.jsdelivr.net"
       ],
       imgSrc: ["'self'", "data:", "https:"]
     }
