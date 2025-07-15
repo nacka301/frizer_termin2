@@ -42,9 +42,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (Array.isArray(appointments) && appointments.length > 0) {
               appointmentsDiv.innerHTML = appointments.map(app => `
                 <div class="appointment-card" data-id="${app.id}" style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin:1.5rem 0;padding:2rem 2.5rem;position:relative;display:flex;flex-direction:column;gap:0.7rem;">
-                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
                     <div style="font-size:1.5rem;font-weight:700;color:#2c3e50;">${app.time || (app.datetime ? app.datetime.split('T')[1].slice(0,5) : '')}</div>
-                    <button class="delete-btn" style="background:#e74c3c;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Obriši</button>
+                    <div style="display:flex;gap:0.7rem;">
+                      <button class="edit-btn" style="background:#3498db;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Promijeni</button>
+                      <button class="delete-btn" style="background:#e74c3c;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Obriši</button>
+                    </div>
                   </div>
                   <div style="font-size:1.2rem;font-weight:600;color:#34495e;">${app.ime} ${app.prezime}</div>
                   <div style="color:#7f8c8d;font-style:italic;font-size:1.1rem;">${app.service} (${app.duration || 30} min) - ${app.price}€</div>
@@ -72,15 +75,67 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
               });
 
-              // Dodaj event listenere za uređivanje (otvara alert s podacima, demo)
+              // Dodaj event listenere za uređivanje (otvara modal s podacima)
               document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                   const card = e.target.closest('.appointment-card');
                   const id = card.getAttribute('data-id');
-                  // Ovdje možeš otvoriti modal ili formu za uređivanje
-                  alert('Uređivanje rezervacije ID: ' + id + '\n(Ovdje dodaj modal/formu za uređivanje)');
+                  const imePrezime = card.querySelector('div:nth-child(3)').textContent.trim();
+                  const service = card.querySelector('div:nth-child(4)').textContent.trim();
+                  const kontakt = card.querySelector('div:nth-child(5)').textContent.trim();
+
+                  // Prikaži modal za uređivanje
+                  showEditModal({
+                    id,
+                    imePrezime,
+                    service,
+                    kontakt
+                  });
                 });
               });
+// Modal za uređivanje rezervacije
+function showEditModal(data) {
+  // Ako modal već postoji, ukloni ga
+  const oldModal = document.getElementById('edit-modal');
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'edit-modal';
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.width = '100vw';
+  modal.style.height = '100vh';
+  modal.style.background = 'rgba(44,62,80,0.7)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '9999';
+
+  modal.innerHTML = `
+    <div style="background:#fff;padding:2.5rem 2.5rem 2rem 2.5rem;border-radius:18px;min-width:340px;max-width:95vw;box-shadow:0 2px 24px rgba(0,0,0,0.18);display:flex;flex-direction:column;gap:1.2rem;align-items:center;">
+      <h2 style="color:#2c3e50;font-size:1.5rem;margin-bottom:1rem;">Uredi rezervaciju</h2>
+      <input id="edit-imeprezime" type="text" value="${data.imePrezime}" style="width:100%;padding:0.7rem;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;" />
+      <input id="edit-service" type="text" value="${data.service}" style="width:100%;padding:0.7rem;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;" />
+      <input id="edit-kontakt" type="text" value="${data.kontakt}" style="width:100%;padding:0.7rem;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;" />
+      <div style="display:flex;gap:1.2rem;margin-top:1.2rem;">
+        <button id="save-edit-btn" style="background:#3498db;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Spremi promjene</button>
+        <button id="close-edit-btn" style="background:#e74c3c;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Odustani</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById('close-edit-btn').onclick = () => modal.remove();
+  document.getElementById('save-edit-btn').onclick = async () => {
+    // Ovdje šalji PATCH/PUT zahtjev na backend (implementacija ovisi o API-u)
+    // Demo: samo zatvori modal i alert
+    modal.remove();
+    alert('Promjene spremljene (demo)!');
+    // Ovdje možeš refrešati podatke ili ažurirati UI
+  };
+}
             } else {
               appointmentsDiv.innerHTML = '<div class="no-appointments">Nema rezervacija za ovaj dan.</div>';
             }
