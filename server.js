@@ -68,6 +68,7 @@ app.use(helmet({
         "'self'",
         "'unsafe-inline'",
         "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com",
         "https://cdn.jsdelivr.net"
       ],
       fontSrc: [
@@ -79,7 +80,9 @@ app.use(helmet({
       scriptSrc: [
         "'self'",
         "'unsafe-inline'",
-        "https://cdn.jsdelivr.net"
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com"
       ],
       imgSrc: ["'self'", "data:", "https:"]
     }
