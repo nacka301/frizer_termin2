@@ -102,21 +102,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
-  cookie: Object.assign(
-    {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    },
-    process.env.NODE_ENV === 'production'
-      ? {
-          secure: true,
-          sameSite: 'none'
-        }
-      : {
-          secure: false,
-          sameSite: 'lax'
-        }
-  )
+  cookie: {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: false,
+    sameSite: 'lax'
+  }
 }));
 
 // CORS configuration for Coolify deployment
