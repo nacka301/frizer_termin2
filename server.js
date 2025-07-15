@@ -85,8 +85,7 @@ app.use(helmet({
 
 // Session configuration
 const sessionPool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  connectionString: process.env.DATABASE_URL
 });
 
 // Trust proxy for correct secure cookies behind reverse proxy (Coolify, etc.)
