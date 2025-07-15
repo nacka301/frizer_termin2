@@ -12,7 +12,18 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.flatpickr) {
     flatpickr('#calendar', {
       dateFormat: 'Y-m-d',
-      defaultDate: new Date(),
+      // defaultDate: new Date(), // makni defaultDate da ne bude ništa odabrano
+      inline: true, // prikaz kalendara odmah
+      minDate: 'today', // onemogući prošle datume
+      disable: [
+        function(date) {
+          // Onemogući nedjelje (0 = nedjelja)
+          return date.getDay() === 0;
+        }
+      ],
+      locale: {
+        firstDayOfWeek: 1 // ponedjeljak kao prvi dan
+      },
       onChange: async function(selectedDates, dateStr, instance) {
         const selectedDateDiv = document.getElementById('selectedDate');
         if (selectedDateDiv) {
