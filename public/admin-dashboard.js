@@ -41,14 +41,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const appointments = await res.json();
             if (Array.isArray(appointments) && appointments.length > 0) {
               appointmentsDiv.innerHTML = appointments.map(app => `
-                <div class="appointment-card" data-id="${app.id}">
-                  <div class="appointment-time">${app.datetime ? app.datetime.split('T')[1] : ''}</div>
-                  <div class="appointment-client">${app.ime} ${app.prezime}</div>
-                  <div class="appointment-service">${app.service}</div>
-                  <div class="appointment-contact">${app.mobitel} | ${app.email}</div>
-                  <div class="appointment-price">Cijena: ${app.price}€</div>
-                  <button class="delete-btn">Obriši</button>
-                  <button class="edit-btn">Uredi</button>
+                <div class="appointment-card" data-id="${app.id}" style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin:1.5rem 0;padding:2rem 2.5rem;position:relative;display:flex;flex-direction:column;gap:0.7rem;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div style="font-size:1.5rem;font-weight:700;color:#2c3e50;">${app.time || (app.datetime ? app.datetime.split('T')[1].slice(0,5) : '')}</div>
+                    <button class="delete-btn" style="background:#e74c3c;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Obriši</button>
+                  </div>
+                  <div style="font-size:1.2rem;font-weight:600;color:#34495e;">${app.ime} ${app.prezime}</div>
+                  <div style="color:#7f8c8d;font-style:italic;font-size:1.1rem;">${app.service} (${app.duration || 30} min) - ${app.price}€</div>
+                  <div style="color:#95a5a6;font-size:1rem;display:flex;align-items:center;gap:1.2rem;">
+                    <span>📞 ${app.mobitel}</span>
+                    <span>✉️ ${app.email}</span>
+                  </div>
                 </div>
               `).join('');
 
