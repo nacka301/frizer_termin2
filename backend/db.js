@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const fs = require('fs');
 const moment = require('moment');
 
 // Funkcije za sanitizaciju i validaciju input podataka
@@ -96,9 +97,9 @@ if (process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+    ssl: {
+      rejectUnauthorized: false
+    },
 });
 
 console.log('DEBUG: Database pool created');

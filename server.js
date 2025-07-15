@@ -16,7 +16,7 @@ const healthCheck = require('./backend/health-check');
 const { detectTenant, getSalonConfigAPI } = require('./backend/multi-tenant');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 // Initialize CSRF protection
 const csrfProtection = csrf();
@@ -130,7 +130,7 @@ const corsOptions = {
           callback(new Error('Not allowed by CORS'));
         }
       }
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    : ['http://localhost:8000', 'http://127.0.0.1:8000'],
   credentials: true,
   optionsSuccessStatus: 200
 };
