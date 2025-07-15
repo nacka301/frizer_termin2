@@ -59,7 +59,7 @@ bookButtons.forEach(button => {
     const time = timeInput.value;
     if (date && time) {
       try {
-        const response = await fetch(`http://localhost:3000/api/check-availability?date=${date}&time=${time}`);
+        const response = await fetch(`http://localhost:3002/api/check-availability?date=${date}&time=${time}`);
         const data = await response.json();
         if (data.available) {
           availabilityStatus.innerText = 'Termin je dostupan!';
@@ -91,7 +91,7 @@ bookButtons.forEach(button => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/book', {
+      const response = await fetch('http://localhost:3002/api/book', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
