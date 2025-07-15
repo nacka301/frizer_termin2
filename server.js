@@ -16,6 +16,10 @@ const healthCheck = require('./backend/health-check');
 const { detectTenant, getSalonConfigAPI } = require('./backend/multi-tenant');
 
 const app = express();
+// Health check endpoint for Coolify and uptime monitoring
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 const PORT = process.env.PORT || 3002;
 
 // Initialize CSRF protection
