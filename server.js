@@ -16,6 +16,11 @@ const healthCheck = require('./backend/health-check');
 const { detectTenant, getSalonConfigAPI } = require('./backend/multi-tenant');
 
 const app = express();
+
+// Block favicon.ico requests with 204 No Content if favicon does not exist
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
 // Health check endpoint for Coolify and uptime monitoring
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
