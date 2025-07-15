@@ -23,7 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (appointmentsDiv) {
           appointmentsDiv.innerHTML = '<em>Učitavanje rezervacija...</em>';
           try {
-            const res = await fetch(`/api/admin/appointments?date=${encodeURIComponent(dateStr)}`);
+            const res = await fetch(`/api/admin/appointments?date=${encodeURIComponent(dateStr)}`, {
+              credentials: 'include'
+            });
             if (!res.ok) throw new Error('Greška pri dohvaćanju rezervacija');
             const appointments = await res.json();
             if (Array.isArray(appointments) && appointments.length > 0) {
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   const id = card.getAttribute('data-id');
                   if (confirm('Jeste li sigurni da želite obrisati ovu rezervaciju?')) {
                     try {
-                      const res = await fetch(`/api/admin/appointments/${id}`, { method: 'DELETE' });
+                  const res = await fetch(`/api/admin/appointments/${id}`, { method: 'DELETE', credentials: 'include' });
                       if (!res.ok) throw new Error('Greška pri brisanju');
                       card.remove();
                     } catch (err) {
