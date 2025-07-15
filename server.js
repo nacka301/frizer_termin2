@@ -71,6 +71,11 @@ const sessionPool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+// Trust proxy for correct secure cookies behind reverse proxy (Coolify, etc.)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(session({
   store: new pgSession({
     pool: sessionPool,
@@ -79,17 +84,22 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    secure: (req, res) => {
-      // Ako je zahtjev preko HTTPS, cookie je secure
-      if (req.secure || req.headers['x-forwarded-proto'] === 'https') return true;
-      // Inače (HTTP, lokalno testiranje) nije secure
-      return false;
+  cookie: Object.assign(
+    {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
     },
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax'
-  }
+    process.env.NODE_ENV === 'production'
+      ? {
+          secure: true,
+          sameSite: 'none',
+          domain: '.mojafrizereka.com'
+        }
+      : {
+          secure: false,
+          sameSite: 'lax'
+        }
+  )
 }));
 
 // CORS configuration for Coolify deployment
