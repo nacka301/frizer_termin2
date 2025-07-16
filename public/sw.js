@@ -1,3 +1,11 @@
+// Aktiviraj novu verziju odmah
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
 // Service Worker for offline support
 const CACHE_NAME = 'frizerke-salon-v1';
 const urlsToCache = [
@@ -27,16 +35,25 @@ self.addEventListener('install', (event) => {
 });
 
 // Fetch event
+// Za HTML datoteke uvijek dohvaćaj svježu verziju s mreže
 self.addEventListener('fetch', (event) => {
+  if (event.request.destination === 'document' || event.request.url.endsWith('.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Po želji: update cache
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
         if (response) {
           return response;
         }
-        
-        // If it's an API request and we're offline, return offline message
         if (event.request.url.includes('/api/')) {
           return fetch(event.request).catch(() => {
             return new Response(JSON.stringify({
@@ -47,7 +64,6 @@ self.addEventListener('fetch', (event) => {
             });
           });
         }
-        
         return fetch(event.request);
       })
   );
