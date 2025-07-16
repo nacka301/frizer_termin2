@@ -66,7 +66,8 @@ app.use(helmet({
       connectSrc: [
         "'self'",
         "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com"
+        "https://fonts.gstatic.com",
+        "https://cdn.jsdelivr.net"
       ],
       styleSrc: [
         "'self'",
