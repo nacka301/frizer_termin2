@@ -25,6 +25,34 @@
   background: #3498db !important;
   color: #fff !important;
 }
+/* Responsive admin dashboard cards and buttons */
+.appointment-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.appointment-card .appointment-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.7rem;
+  align-items: center;
+}
+@media (max-width: 600px) {
+  .appointment-card {
+    padding: 1.2rem 0.7rem !important;
+    font-size: 1rem !important;
+  }
+  .appointment-card .appointment-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  .edit-btn, .delete-btn {
+    min-width: unset !important;
+    width: 100%;
+    font-size: 1rem !important;
+    padding: 0.7rem 0.5rem !important;
+  }
+}
 /* Reset & Base Styles */
 * {
     margin: 0;
