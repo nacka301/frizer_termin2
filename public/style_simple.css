@@ -1,3 +1,13 @@
+/* Flatpickr month dropdown fix */
+.flatpickr-monthDropdown-months {
+  min-width: 120px;
+  max-width: 180px;
+  font-size: 1rem;
+  z-index: 9999;
+}
+.flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+  white-space: nowrap;
+}
 /* Reset & Base Styles */
 * {
     margin: 0;
