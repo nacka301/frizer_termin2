@@ -56,6 +56,21 @@
 .admin-dashboard .appointment-actions button {
   width: 180px;
   min-width: 120px;
+  margin: 0;
+  font-size: 1rem !important;
+  text-align: center;
+}
+.admin-dashboard .appointment-card .appointment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: flex-end;
+  justify-content: flex-end;
+  margin: 0;
+}
+.admin-dashboard .appointment-actions button {
+  width: 180px;
+  min-width: 120px;
 }
   vertical-align: middle;
   margin: 0;
