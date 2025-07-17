@@ -37,7 +37,13 @@
   align-items: center;
   justify-content: flex-end;
   margin: 0;
-/* Dugmad u istom redu, bez preklapanja */
+/* Specifično za admin-dashboard.html: dugmad jedan ispod drugog */
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: flex-end;
+  justify-content: flex-end;
+  margin: 0;
 .appointment-actions button {
   vertical-align: middle;
   margin: 0;
@@ -46,8 +52,7 @@
     font-size: 1rem !important;
   }
   .appointment-card .appointment-actions {
-    flex-direction: column;
-    gap: 0.5rem;
+    /* uklonjeno: vraćeno na horizontalni prikaz */
     align-items: stretch;
   }
   .edit-btn, .delete-btn {
