@@ -182,14 +182,19 @@ main {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
-    margin-top: 2rem;
+   align-items: flex-end;
 }
 
+   min-height: 48px;
 .service-item {
     background: #f8f9fa;
     padding: 2rem;
     border-radius: 10px;
     text-align: center;
+   height: 40px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
     box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     transition: transform 0.3s ease;
 }
