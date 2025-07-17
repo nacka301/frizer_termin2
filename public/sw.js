@@ -1,6 +1,12 @@
 // Aktiviraj novu verziju odmah
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
+  // Automatski reload svih klijenata kad se SW aktivira
+  self.clients.matchAll({ type: 'window' }).then(clients => {
+    clients.forEach(client => {
+      client.navigate(client.url);
+    });
+  });
 });
 
 self.addEventListener('install', (event) => {
@@ -37,11 +43,16 @@ self.addEventListener('install', (event) => {
 // Fetch event
 // Za HTML datoteke uvijek dohvaćaj svježu verziju s mreže
 self.addEventListener('fetch', (event) => {
-  if (event.request.destination === 'document' || event.request.url.endsWith('.html')) {
+  // Za HTML, CSS i JS datoteke uvijek dohvaćaj svježu verziju s mreže
+  if (
+    event.request.destination === 'document' ||
+    event.request.url.endsWith('.html') ||
+    event.request.url.endsWith('.css') ||
+    event.request.url.endsWith('.js')
+  ) {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Po želji: update cache
           return response;
         })
         .catch(() => caches.match(event.request))
