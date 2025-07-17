@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="appointment-card" data-id="${app.id}" style="background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin:1.5rem 0;padding:2rem 2.5rem;position:relative;display:flex;flex-direction:column;gap:0.7rem;">
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
                     <div style="font-size:1.5rem;font-weight:700;color:#2c3e50;">${app.time || (app.datetime ? app.datetime.split('T')[1].slice(0,5) : '')}</div>
-                    <div style="display:flex;gap:0.7rem;">
+                    <div style="display:flex;gap:1.2rem;justify-content:flex-end;">
                       <button class="edit-btn" style="background:#3498db;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Promijeni</button>
                       <button class="delete-btn" style="background:#e74c3c;color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Obriši</button>
                     </div>
@@ -75,22 +75,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
               });
 
-              // Dodaj event listenere za uređivanje (otvara modal s podacima)
+              // Dodaj event listenere za uređivanje (preusmjeri na početnu za odabir drugog termina)
               document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', async function(e) {
                   const card = e.target.closest('.appointment-card');
                   const id = card.getAttribute('data-id');
-                  const imePrezime = card.querySelector('div:nth-child(3)').textContent.trim();
-                  const service = card.querySelector('div:nth-child(4)').textContent.trim();
-                  const kontakt = card.querySelector('div:nth-child(5)').textContent.trim();
-
-                  // Prikaži modal za uređivanje
-                  showEditModal({
-                    id,
-                    imePrezime,
-                    service,
-                    kontakt
-                  });
+                  try {
+                    const res = await fetch(`/api/admin/appointments/${id}`, { method: 'DELETE', credentials: 'include' });
+                    if (!res.ok) throw new Error('Greška pri brisanju');
+                    card.remove();
+                  } catch (err) {
+                    alert('Greška pri brisanju!');
+                  }
+                  window.location.href = '/index.html';
                 });
               });
 // Modal za uređivanje rezervacije
