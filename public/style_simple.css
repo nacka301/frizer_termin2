@@ -7,31 +7,43 @@
 }
 .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
   white-space: nowrap;
-}
-/* Flatpickr custom dropdown tamni stil */
+  width: 120px;
+  padding: 0.7rem 1.2rem;
+  background: #3498db !important;
+  border-radius: 8px;
+  color: #fff !important;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.7rem;
 .flatpickr-monthDropdown-months {
   background: #2c3e50 !important;
   color: #fff !important;
   border-radius: 8px !important;
   box-shadow: 0 2px 12px rgba(44,62,80,0.18) !important;
-  border: none !important;
-}
+  width: 180px;
+  min-width: 120px;
 .flatpickr-monthDropdown-month {
   background: #2c3e50 !important;
-  color: #fff !important;
+    font-size: 1rem !important;
+    padding: 0.7rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.7rem;
   border-radius: 0 !important;
 }
-.flatpickr-monthDropdown-month:hover, .flatpickr-monthDropdown-month:focus, .flatpickr-monthDropdown-month.selected {
-  background: #3498db !important;
+  background: #e74c3c !important;
   color: #fff !important;
-}
-/* Responsive admin dashboard cards and buttons */
-.appointment-card {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-.appointment-card .appointment-actions {
-  display: flex;
+  border: none;
+  width: 120px;
+  min-width: 90px;
+  align-self: flex-end;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.7rem;
   flex-direction: row;
   gap: 0.7rem;
   align-items: center;
