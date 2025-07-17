@@ -181,7 +181,7 @@ main {
 
 .service-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+ flex-direction: column;
     gap: 2rem;
    align-items: flex-end;
 }
