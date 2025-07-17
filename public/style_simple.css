@@ -8,6 +8,23 @@
 .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
   white-space: nowrap;
 }
+/* Flatpickr custom dropdown tamni stil */
+.flatpickr-monthDropdown-months {
+  background: #2c3e50 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 12px rgba(44,62,80,0.18) !important;
+  border: none !important;
+}
+.flatpickr-monthDropdown-month {
+  background: #2c3e50 !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+}
+.flatpickr-monthDropdown-month:hover, .flatpickr-monthDropdown-month:focus, .flatpickr-monthDropdown-month.selected {
+  background: #3498db !important;
+  color: #fff !important;
+}
 /* Reset & Base Styles */
 * {
     margin: 0;
