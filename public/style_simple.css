@@ -39,12 +39,24 @@
   margin: 0;
 /* Specifično za admin-dashboard.html: dugmad jedan ispod drugog */
   display: flex;
+  min-width: 110px;
+  margin: 0;
+  font-size: 1rem !important;
+  text-align: center;
+.appointment-actions button {
+/* Specifično za admin-dashboard.html: dugmad jedan ispod drugog, iste širine, poravnata desno */
+.admin-dashboard .appointment-card .appointment-actions {
+  display: flex;
   flex-direction: column;
   gap: 0.7rem;
   align-items: flex-end;
   justify-content: flex-end;
   margin: 0;
-.appointment-actions button {
+}
+.admin-dashboard .appointment-actions button {
+  width: 180px;
+  min-width: 120px;
+}
   vertical-align: middle;
   margin: 0;
   min-width: 110px;
