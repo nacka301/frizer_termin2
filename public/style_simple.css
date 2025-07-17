@@ -35,6 +35,14 @@
   flex-direction: row;
   gap: 0.7rem;
   align-items: center;
+  justify-content: flex-end;
+  margin: 0;
+}
+/* Dugmad u istom redu, bez preklapanja */
+.appointment-actions button {
+  vertical-align: middle;
+  margin: 0;
+  min-width: 110px;
 }
 @media (max-width: 600px) {
   .appointment-card {
